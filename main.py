@@ -1,7 +1,9 @@
 import click
+import sys
+
 from compilation import Compiler
-from preprocessing import Preprocessor
-from tokening import Tokenizer
+from tokenization import Tokenizer
+from errors import CompilationError
 
 
 @click.command()
@@ -10,11 +12,14 @@ from tokening import Tokenizer
 def main(path: str, output: str):
     with open(path) as file:
         content = file.read()
-    content = Preprocessor().preprocess(content)
-    tokens = Tokenizer().tokenize(content)
-    with open(output,'w') as output:
-        compiler = Compiler(output)
-        compiler.compile()
+    try:
+        tokens = Tokenizer().tokenize(content)
+        with open(output,'w') as output:
+            compiler = Compiler(output)
+            compiler.compile()
+    except CompilationError as e:
+        print(f"{path}:{e}", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()
