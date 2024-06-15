@@ -118,6 +118,10 @@ def test_order_of_operation_double_parenthesis():
     )
 
 
+def test_nagative_literal():
+    tokens = Tokenizer().tokenize("-1")
+    assert Parser(tokens).parse_operand() == Literal("-1")
+
 def test_return_literal():
     tokens = Tokenizer().tokenize("return -1;")
     assert Parser(tokens).parse_keyword() == Return(Literal("-1"))

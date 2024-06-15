@@ -5,20 +5,17 @@ class Token:
         self.pos = pos
         self.raw = raw
 
-    def __len__(self):
-        return len(self.raw)
-
     def __repr__(self):
         return f"{type(self).__name__}({self.raw})"
-
-    def __eq__(self, other):
-        return self.raw == other.raw
 
 
 class Identifier(Token):
     def __init__(self, name: str, pos: Position = None):
         super().__init__(name, pos)
         self.name = name
+
+    def __eq__(self, other):
+        return self.name == other.name
 
 
 class Keyword(Token):
@@ -30,6 +27,9 @@ class Keyword(Token):
             raise ValueError()
         self.keyword = keyword
 
+    def __eq__(self, other):
+        return self.keyword == other.keyword
+
 
 class Seperator(Token):
     SEPERATORS = set("();")
@@ -40,11 +40,17 @@ class Seperator(Token):
             raise ValueError()
         self.seperator = seperator
 
+    def __eq__(self, other):
+        return self.seperator == other.seperator
+
 
 class Literal(Token):
     def __init__(self, literal: str, pos: Position = None):
         super().__init__(literal, pos)
         self.literal = int(literal)
+
+    def __eq__(self, other):
+        return self.literal == other.literal
 
 
 class Operator(Token):
@@ -56,3 +62,5 @@ class Operator(Token):
             raise ValueError()
         self.operator = operator
 
+    def __eq__(self, other):
+        return self.operator == other.operator
