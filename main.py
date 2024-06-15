@@ -18,7 +18,7 @@ def main(path: str, bin_out: str):
     try:
         tokens = Tokenizer().tokenize(content)
         ast = Parser(tokens).parse()
-        instructions = Compiler(ast).compile()
+        instructions = Compiler().compile(ast)
     except CompilationError as e:
         print(f"{path}:{e}", file=sys.stderr)
         return

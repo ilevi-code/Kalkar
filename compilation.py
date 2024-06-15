@@ -16,17 +16,13 @@ class Compiler:
         '.asciz "%d\\n"',
     ]
 
-    def __init__(self, blocks):
+    def __init__(self):
         self.output = []
-        self.blocks = blocks
         self.stack_positions = {}
         self.stack_top = 0
-        self.index = 0
 
-    def compile(self):
-        while self.index < len(self.blocks):
-            block = self.blocks[self.index]
-            self.index += 1
+    def compile(self, blocks):
+        for block in blocks:
             if type(block) is Return:
                 self.compile_return(block)
             elif type(block) is Assignment:
@@ -35,7 +31,8 @@ class Compiler:
                 assert False, f"Unknown expression {block}"
         self.align_stack()
         total = self.PROLOGUE.copy()
-        total.append(f"sub ${self.stack_top}, %rsp")
+        if self.stack_top != 0:
+            total.append(f"sub ${self.stack_top}, %rsp")
         total.extend(self.output)
         total.extend(self.EPILOGUE)
         return total
@@ -64,22 +61,22 @@ class Compiler:
             ]
         )
 
-    def compile_expression(self, expr):
-        for operand, is_rhs in [(expr.lhs, False), (expr.rhs, True)]:
+    def compile_expression(self, expr, is_rhs=False):
+        if is_rhs:
+            self.output.append("push %rax")
+        for operand, is_operand_rhs in [(expr.lhs, False), (expr.rhs, True)]:
             if type(operand) is Literal:
-                self.compile_literal(operand, is_rhs)
+                self.compile_literal(operand, is_operand_rhs)
             elif type(operand) is Identifier:
-                self.compile_identifier(operand, is_rhs)
+                self.compile_identifier(operand, is_operand_rhs)
             elif type(operand) is Expression:
-                if is_rhs:
-                    self.output.append("push %rax")
-                self.compile_expression(operand)
-                if is_rhs:
-                    self.output.append("mov %rax, %rbx")
-                    self.output.append("pop %rax")
+                self.compile_expression(operand, is_operand_rhs)
             else:
                 assert False, f"Unknown expression {statement.expr}"
         self.compile_operator(expr.operator)
+        if is_rhs:
+            self.output.append("mov %rax, %rbx")
+            self.output.append("pop %rax")
 
     def compile_literal(self, literal, is_rhs=False):
         dest_register = "rbx" if is_rhs else "rax"
