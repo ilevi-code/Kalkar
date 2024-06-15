@@ -51,13 +51,18 @@ class Parser:
         return Assignment(dest, src)
 
     def parse_expression(self):
+        return self.parse_expression_until_seperator(";")
+
+    def parse_expression_until_seperator(self, seperator):
         root = self.parse_operand()
 
         while True:
             if type(self.current_token) is Seperator:
-                if self.current_token.seperator == ";":
+                if self.current_token.seperator == seperator:
                     self.index += 1
-                break
+                    break
+                else:
+                    raise ExpectedTokenError(self.current_token, seperator)
             elif type(self.current_token) is Operator:
                 operator = self.current_token
                 self.index += 1
@@ -65,7 +70,7 @@ class Parser:
                 root = Expression(root, operator, rhs)
                 root = root.reorder()
             else:
-                raise ExpectedTokenError(self.current_token, ";")
+                raise ExpectedTokenError(self.current_token, seperator)
         return root
 
     def parse_operand(self):
@@ -85,24 +90,12 @@ class Parser:
             and self.current_token.seperator == "("
         ):
             self.index += 1
-            expression = self.parse_expression()
-            self.check_matching_parenthesis()
+            expression = self.parse_expression_until_seperator(')')
             if type(expression) is Expression:
                 return expression.parenthesize()
             return expression
         else:
             raise UnexpectedTokenError(self.current_token)
-
-    def check_matching_parenthesis(self):
-        is_end = self.index >= len(self.tokens)
-        if is_end:
-            raise ExpectedTokenError(self.tokens[-1], ")")
-        if (
-            type(self.current_token) is not Seperator
-            or self.current_token.seperator != ")"
-        ):
-            raise ExpectedTokenError(self.current_token, ")")
-        self.index += 1
 
     def parse_keyword(self):
         keyword = self.current_token

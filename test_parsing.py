@@ -47,7 +47,7 @@ def test_parenthesized_literal():
 
 def test_missing_closing_parenthesis():
     tokens = Tokenizer().tokenize("(5;")
-    with pytest.raises(ExpectedTokenError):
+    with pytest.raises(ExpectedTokenError, match='Expected \\) before ";"'):
         Parser(tokens).parse_expression()
 
 
