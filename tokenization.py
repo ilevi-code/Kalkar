@@ -19,6 +19,7 @@ class LineScanner:
         self.line = line
         self.index = 0
         self.line_number = line_number
+        self.prev_index = None
 
     def is_num(self) -> bool:
         return self.line[self.index].isnumeric()
@@ -38,17 +39,17 @@ class LineScanner:
         except IndexError:
             return False
 
-    def position(self) -> Position:
-        return Position(self.line, self.line_number, self.index)
+    def last_position(self) -> Position:
+        return Position(self.line, self.line_number, self.prev_index)
 
     def read(self) -> str:
         self.skip_spaces()
-        start_index = self.index
+        self.prev_index = self.index
         try:
             self.advance()
         except IndexError:
             pass
-        return self.line[start_index : self.index]
+        return self.line[self.prev_index : self.index]
 
     def skip_spaces(self):
         while self.index < len(self.line) and self.line[self.index].isspace():
@@ -65,7 +66,7 @@ class LineScanner:
             while self.is_identifier():
                 self.index += 1
         else:
-            raise UnknownCharacher(self.position())
+            raise UnknownCharacher(Position(self.line, self.line_number, self.index))
 
 
 class Tokenizer:
@@ -77,7 +78,7 @@ class Tokenizer:
             while lexeme := line_scanner.read():
                 for cls in [Operator, Seperator, Keyword, Literal, Identifier]:
                     try:
-                        tokens.append(cls(lexeme, line_scanner.position()))
+                        tokens.append(cls(lexeme, line_scanner.last_position()))
                         break
                     except ValueError:
                         pass

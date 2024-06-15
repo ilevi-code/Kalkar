@@ -65,9 +65,19 @@ def test_single_literal():
 def test_negative_literal():
     assert Tokenizer().tokenize("-42")[0].literal == -42
 
-def test_position():
-    assert Tokenizer().tokenize("1337\na = 1")[-1].pos == Position("a = 1", 2, 5)
+def test_first_position():
+    assert Tokenizer().tokenize("1337")[0].pos == Position("1337", 1, 0)
 
+def test_second_position():
+    assert Tokenizer().tokenize("var =")[1].pos == Position("var =", 1, 4)
+
+def test_error_position():
+    try:
+        Tokenizer().tokenize("1337\na = 1$")
+    except UnknownCharacher as e:
+        assert e.position == Position("a = 1$", 2, 5)
+    else:
+        assert False, "Didn't raise"
 
 def test_unkown_char():
     with pytest.raises(UnknownCharacher):

@@ -133,3 +133,11 @@ def test_return_expression():
     assert Parser(tokens).parse_keyword() == Return(
         Expression(Identifier("var"), Operator("+"), Literal("1"))
     )
+
+
+def test_multiple_statements():
+    tokens = Tokenizer().tokenize("var = 2; return var;")
+    assert Parser(tokens).parse() == [
+        Assignment(Identifier("var"), Literal("2")),
+        Return(Identifier("var")),
+    ]

@@ -33,7 +33,7 @@ class Parser:
             if type(self.current_token) is Identifier:
                 parsed.append(self.parse_assignment())
             elif type(self.current_token) is Keyword:
-                parse.append(self.parse_keyword())
+                parsed.append(self.parse_keyword())
             else:
                 raise UnexpectedTokenError(self.current_token)
         return parsed
@@ -55,6 +55,8 @@ class Parser:
 
         while True:
             if type(self.current_token) is Seperator:
+                if self.current_token.seperator == ";":
+                    self.index += 1
                 break
             elif type(self.current_token) is Operator:
                 operator = self.current_token
@@ -77,22 +79,28 @@ class Parser:
         ):
             self.index += 1
             expression = self.parse_expression()
-            if (
-                type(self.current_token) is not Seperator
-                or self.current_token.seperator != ")"
-            ):
-                raise ExpectedTokenError(self.current_token, ")")
-            self.index += 1
+            self.check_matching_parenthesis()
             if type(expression) is Expression:
                 return expression.parenthesize()
             return expression
         else:
             raise UnexpectedTokenError(self.current_token)
 
+    def check_matching_parenthesis(self):
+        is_end = self.index >= len(self.tokens)
+        if is_end:
+            raise ExpectedTokenError(self.tokens[-1], ")")
+        if (
+            type(self.current_token) is not Seperator
+            or self.current_token.seperator != ")"
+        ):
+            raise ExpectedTokenError(self.current_token, ")")
+        self.index += 1
+
     def parse_keyword(self):
         keyword = self.current_token
         self.index += 1
-        if keyword.keyword == 'return':
+        if keyword.keyword == "return":
             expr = self.parse_expression()
             return Return(expr)
         assert False, f"unsupported keyword {keyword.keyword}"
