@@ -96,3 +96,17 @@ class Compiler:
             self.output.append("idiv %rbx")
         else:
             assert False, f"Unknown operator {operator.operator}"
+
+    def compile_assignment(self, assignment):
+        if assignment.dst.name not in self.stack_positions:
+            self.stack_positions[assignment.dst.name] = self.stack_top
+            self.stack_top += 8
+        src = assignment.src
+        if type(src) is Literal:
+            self.compile_literal(src)
+        elif type(src) is Identifier:
+            self.compile_identifier(src)
+        elif type(src) is Expression:
+            self.compile_expression(src)
+        stack_pos = self.stack_positions[assignment.dst.name]
+        self.output.append(f"mov %rax, {stack_pos}(%rsp)")
