@@ -32,6 +32,12 @@ class LineScanner:
     def is_identifier(self) -> bool:
         return self.is_start_of_identifier() or self.line[self.index].isnumeric()
 
+    def is_minus_num(self) -> bool:
+        try:
+            return self.line[self.index] == '-' and self.line[self.index + 1].isnumeric()
+        except IndexError:
+            return False
+
     def position(self) -> Position:
         return Position(self.line, self.line_number, self.index)
 
@@ -49,11 +55,12 @@ class LineScanner:
             self.index += 1
 
     def advance(self):
-        if self.is_special():
+        if self.is_num() or self.is_minus_num():
             self.index += 1
-        elif self.is_num():
             while self.is_num():
                 self.index += 1
+        elif self.is_special():
+            self.index += 1
         elif self.is_start_of_identifier():
             while self.is_identifier():
                 self.index += 1

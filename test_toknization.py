@@ -62,6 +62,8 @@ def test_single_seperator():
 def test_single_literal():
     assert Tokenizer().tokenize("1337")[0].literal == 1337
 
+def test_negative_literal():
+    assert Tokenizer().tokenize("-42")[0].literal == -42
 
 def test_position():
     assert Tokenizer().tokenize("1337\na = 1")[-1].pos == Position("a = 1", 2, 5)
