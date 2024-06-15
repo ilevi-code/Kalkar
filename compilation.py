@@ -3,17 +3,18 @@ from tokens import Identifier, Literal
 
 
 class Compiler:
+    STACK_ALIGNMENT = 0x10
     PROLOGUE = [
-'.global main',
-"main:",
-"push %rbp",
-"mov  %rsp, %rbp",
-]
+        '.global main',
+        "main:",
+        "push %rbp",
+        "mov  %rsp, %rbp",
+    ]
     EPILOGUE = [
-".section .rodata",
-"format:",
-'.asciz "%d\\n"',
-]
+        ".section .rodata",
+        "format:",
+        '.asciz "%d\\n"',
+    ]
 
     def __init__(self, blocks):
         self.output = []
@@ -32,11 +33,15 @@ class Compiler:
                 self.compile_assignment(block)
             else:
                 assert False, f"Unknown expression {block}"
+        self.align_stack()
         total = self.PROLOGUE.copy()
         total.append(f"sub ${self.stack_top}, %rsp")
         total.extend(self.output)
         total.extend(self.EPILOGUE)
         return total
+
+    def align_stack(self):
+        self.stack_top = (self.stack_top + (self.STACK_ALIGNMENT - 1)) & ~(self.STACK_ALIGNMENT-1)
 
     def compile_return(self, statement):
         if type(statement.expr) is Literal:
