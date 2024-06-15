@@ -1,13 +1,8 @@
 import pytest
 
-from parsing import (
-    Parser,
-    Operation,
-    Assignment,
-    EndOfInputError,
-    UnexpectedTokenError,
-    ExpectedTokenError,
-)
+from parsing import Parser, EndOfInputError, UnexpectedTokenError, ExpectedTokenError
+from blocks import Operation, Assignment
+
 from tokenization import Tokenizer, Identifier, Literal, Operator, Seperator, Keyword
 
 
@@ -86,6 +81,7 @@ def test_order_of_operations_left_to_right():
         Operation(Literal("420"), Operator("*"), Literal("42")),
     )
 
+
 def test_order_of_operations_right_to_left():
     tokens = Tokenizer().tokenize("1337 * 420 + 42;")
     assert Parser(tokens).parse_expression() == Operation(
@@ -111,6 +107,7 @@ def test_order_of_operation_needed_parenthesis():
         Operator("*"),
         Literal("42"),
     )
+
 
 def test_order_of_operation_double_parenthesis():
     tokens = Tokenizer().tokenize("(1337 + 420) * (42 + 1);")
