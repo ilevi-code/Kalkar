@@ -10,6 +10,7 @@ class Compiler:
 "mov  %rsp, %rbp",
 ]
     EPILOGUE = [
+".section .rodata",
 "format:",
 '.asciz "%d\\n"',
 ]
@@ -41,7 +42,7 @@ class Compiler:
         elif type(statement.expr) is Identifier:
             assert False, "TODO"
         elif type(statement.expr) is Expression:
-            assert False, "TODO"
+            self.compile_expression(statement.expr)
         else:
             assert False, f"Unknown expression {statement.expr}"
         self.output.extend(
@@ -55,7 +56,31 @@ class Compiler:
             ]
         )
 
+    def compile_expression(self, expr):
+        for operand, is_rhs in [(expr.lhs, False), (expr.rhs, True)]:
+            if type(operand) is Literal:
+                self.compile_literal(operand, is_rhs)
+            elif type(operand) is Identifier:
+                assert False, "TODO"
+            elif type(operand) is Expression:
+                assert False, "TODO"
+            else:
+                assert False, f"Unknown expression {statement.expr}"
+        self.compile_operator(expr.operator)
+
     def compile_literal(self, literal, is_rhs=False):
         dest_register = "rbx" if is_rhs else "rax"
         self.output.append(f"mov ${literal.literal}, %{dest_register}")
 
+    def compile_operator(self, operator):
+        if operator.operator == '+':
+            self.output.append("add %rbx, %rax")
+        elif operator.operator == '-':
+            self.output.append("sub %rbx, %rax")
+        elif operator.operator == '*':
+            self.output.append("mul %rbx")
+        elif operator.operator == '/':
+            self.output.append("xor %rdx, %rdx")
+            self.output.append("idiv %rbx")
+        else:
+            assert False, f"Unknown operator {operator.operator}"
