@@ -23,24 +23,26 @@ class Compiler:
         self.index = 0
 
     def compile(self):
-        self.output.extend(self.PROLOGUE)
         while self.index < len(self.blocks):
             block = self.blocks[self.index]
             self.index += 1
             if type(block) is Return:
                 self.compile_return(block)
             elif type(block) is Assignment:
-                assert False, "TODO"
+                self.compile_assignment(block)
             else:
                 assert False, f"Unknown expression {block}"
-        self.output.extend(self.EPILOGUE)
-        return self.output
+        total = self.PROLOGUE.copy()
+        total.append(f"sub ${self.stack_top}, %rsp")
+        total.extend(self.output)
+        total.extend(self.EPILOGUE)
+        return total
 
     def compile_return(self, statement):
         if type(statement.expr) is Literal:
             self.compile_literal(statement.expr)
         elif type(statement.expr) is Identifier:
-            assert False, "TODO"
+            self.compile_identifier(statement.expr)
         elif type(statement.expr) is Expression:
             self.compile_expression(statement.expr)
         else:
@@ -61,7 +63,7 @@ class Compiler:
             if type(operand) is Literal:
                 self.compile_literal(operand, is_rhs)
             elif type(operand) is Identifier:
-                assert False, "TODO"
+                self.compile_identifier(operand, is_rhs)
             elif type(operand) is Expression:
                 assert False, "TODO"
             else:
@@ -71,6 +73,11 @@ class Compiler:
     def compile_literal(self, literal, is_rhs=False):
         dest_register = "rbx" if is_rhs else "rax"
         self.output.append(f"mov ${literal.literal}, %{dest_register}")
+
+    def compile_identifier(self, identifier, is_rhs=False):
+        dest_register = "rbx" if is_rhs else "rax"
+        stack_pos = self.stack_positions[identifier.name]
+        self.output.append(f"mov {stack_pos}(%rsp), %{dest_register}")
 
     def compile_operator(self, operator):
         if operator.operator == '+':
