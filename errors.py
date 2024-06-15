@@ -11,12 +11,3 @@ class CompilationError(Exception):
         highlight = "^" * self.highlight_len
         return f"{self.position.line_number}: {self.message}\n{self.position.line}\n{space_pad}{highlight}"
 
-class UnknownCharacher(CompilationError):
-    def __init__(self, position: Position):
-        unknown = position.line[position.offset]
-        super().__init__(position, 1, f"Unkown character \"{unknown}\"")
-
-class UnexpectedToken(CompilationError):
-    def __init__(self, token):
-        unknown = position.line[position.offset]
-        super().__init__(position, 1, f"Unkown character \"{unknown}\"")
