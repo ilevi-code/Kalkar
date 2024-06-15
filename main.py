@@ -3,6 +3,7 @@ import sys
 import subprocess
 
 from compilation import Compiler
+from parsing import Parser
 from tokenization import Tokenizer
 from errors import CompilationError
 
@@ -16,11 +17,13 @@ def main(path: str, bin_out: str):
         content = file.read()
     try:
         tokens = Tokenizer().tokenize(content)
-        with open(asm_out ,'w') as output:
-            compiler = Compiler(output)
-            compiler.compile(tokens)
+        ast = Parser(tokens).parse()
+        instructions = Compiler(ast).compile()
     except CompilationError as e:
         print(f"{path}:{e}", file=sys.stderr)
+        return
+    with open(asm_out ,'w') as output:
+        output.write('\n'.join(instructions))
     subprocess.run(['gcc', asm_out, '-o', bin_out])
 
 
