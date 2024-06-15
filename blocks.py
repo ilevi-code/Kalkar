@@ -51,3 +51,11 @@ class Assignment:
 
     def __eq__(self, other):
         return self.dst == other.dst and self.src == other.src
+
+
+class Return:
+    def __init__(self, expr):
+        self.expr = expr
+
+    def __eq__(self, other):
+        return self.expr == other.expr

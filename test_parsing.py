@@ -1,7 +1,7 @@
 import pytest
 
 from parsing import Parser, EndOfInputError, UnexpectedTokenError, ExpectedTokenError
-from blocks import Operation, Assignment
+from blocks import Operation, Assignment, Return
 
 from tokenization import Tokenizer, Identifier, Literal, Operator, Seperator, Keyword
 
@@ -115,4 +115,21 @@ def test_order_of_operation_double_parenthesis():
         Operation(Literal("1337"), Operator("+"), Literal("420")).parenthesize(),
         Operator("*"),
         Operation(Literal("42"), Operator("+"), Literal("1")).parenthesize(),
+    )
+
+
+def test_return_literal():
+    tokens = Tokenizer().tokenize("return -1;")
+    assert Parser(tokens).parse_keyword() == Return(Literal("-1"))
+
+
+def test_return_variable():
+    tokens = Tokenizer().tokenize("return var;")
+    assert Parser(tokens).parse_keyword() == Return(Identifier("var"))
+
+
+def test_return_expression():
+    tokens = Tokenizer().tokenize("return var + 1;")
+    assert Parser(tokens).parse_keyword() == Return(
+        Operation(Identifier("var"), Operator("+"), Literal("1"))
     )

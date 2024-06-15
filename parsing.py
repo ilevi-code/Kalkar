@@ -1,6 +1,6 @@
 from tokenization import Identifier, Literal, Operator, Seperator, Keyword
 from errors import CompilationError
-from blocks import Operation, Assignment
+from blocks import Operation, Assignment, Return
 
 
 class UnexpectedTokenError(CompilationError):
@@ -33,7 +33,7 @@ class Parser:
             if type(self.current_token) is Identifier:
                 parsed.append(self.parse_assignment())
             elif type(self.current_token) is Keyword:
-                parse.append(self.parse_return_statment())
+                parse.append(self.parse_keyword())
             else:
                 raise UnexpectedTokenError(self.current_token)
         return parsed
@@ -88,6 +88,14 @@ class Parser:
             return expression
         else:
             raise UnexpectedTokenError(self.current_token)
+
+    def parse_keyword(self):
+        keyword = self.current_token
+        self.index += 1
+        if keyword.keyword == 'return':
+            expr = self.parse_expression()
+            return Return(expr)
+        assert False, f"unsupported keyword {keyword.keyword}"
 
     @property
     def current_token(self):
