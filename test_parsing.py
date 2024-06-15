@@ -1,7 +1,7 @@
 import pytest
 
 from parsing import Parser, EndOfInputError, UnexpectedTokenError, ExpectedTokenError
-from blocks import Operation, Assignment, Return
+from blocks import Expression, Assignment, Return
 
 from tokenization import Tokenizer, Identifier, Literal, Operator, Seperator, Keyword
 
@@ -13,15 +13,15 @@ def test_expression_single_operand():
 
 def test_expression_simple_operation():
     tokens = Tokenizer().tokenize("5*3;")
-    assert Parser(tokens).parse_expression() == Operation(
+    assert Parser(tokens).parse_expression() == Expression(
         Literal("5"), Operator("*"), Literal("3")
     )
 
 
 def test_expression_complex():
     tokens = Tokenizer().tokenize("1337 + 420 + 42;")
-    assert Parser(tokens).parse_expression() == Operation(
-        Operation(Literal("1337"), Operator("+"), Literal("420")),
+    assert Parser(tokens).parse_expression() == Expression(
+        Expression(Literal("1337"), Operator("+"), Literal("420")),
         Operator("+"),
         Literal("42"),
     )
@@ -35,7 +35,7 @@ def test_missing_oeprand():
 
 def test_parenthesized_experssion():
     tokens = Tokenizer().tokenize("(1+2);")
-    expected = Operation(Literal("1"), Operator("+"), Literal("2"))
+    expected = Expression(Literal("1"), Operator("+"), Literal("2"))
     expected.parenthesize()
     assert Parser(tokens).parse_expression() == expected
 
@@ -69,23 +69,23 @@ def test_assigment_of_operation():
     tokens = Tokenizer().tokenize("foo = 1337 - 420;")
     assert Parser(tokens).parse_assignment() == Assignment(
         Identifier("foo"),
-        Operation(Literal("1337"), Operator("-"), Literal("420")),
+        Expression(Literal("1337"), Operator("-"), Literal("420")),
     )
 
 
 def test_order_of_operations_left_to_right():
     tokens = Tokenizer().tokenize("1337 + 420 * 42;")
-    assert Parser(tokens).parse_expression() == Operation(
+    assert Parser(tokens).parse_expression() == Expression(
         Literal("1337"),
         Operator("+"),
-        Operation(Literal("420"), Operator("*"), Literal("42")),
+        Expression(Literal("420"), Operator("*"), Literal("42")),
     )
 
 
 def test_order_of_operations_right_to_left():
     tokens = Tokenizer().tokenize("1337 * 420 + 42;")
-    assert Parser(tokens).parse_expression() == Operation(
-        Operation(Literal("1337"), Operator("*"), Literal("420")),
+    assert Parser(tokens).parse_expression() == Expression(
+        Expression(Literal("1337"), Operator("*"), Literal("420")),
         Operator("+"),
         Literal("42"),
     )
@@ -93,17 +93,17 @@ def test_order_of_operations_right_to_left():
 
 def test_order_of_operation_uneeded_parenthesis():
     tokens = Tokenizer().tokenize("1337 + (420 * 42);")
-    assert Parser(tokens).parse_expression() == Operation(
+    assert Parser(tokens).parse_expression() == Expression(
         Literal("1337"),
         Operator("+"),
-        Operation(Literal("420"), Operator("*"), Literal("42")).parenthesize(),
+        Expression(Literal("420"), Operator("*"), Literal("42")).parenthesize(),
     )
 
 
 def test_order_of_operation_needed_parenthesis():
     tokens = Tokenizer().tokenize("(1337 + 420) * 42;")
-    assert Parser(tokens).parse_expression() == Operation(
-        Operation(Literal("1337"), Operator("+"), Literal("420")).parenthesize(),
+    assert Parser(tokens).parse_expression() == Expression(
+        Expression(Literal("1337"), Operator("+"), Literal("420")).parenthesize(),
         Operator("*"),
         Literal("42"),
     )
@@ -111,10 +111,10 @@ def test_order_of_operation_needed_parenthesis():
 
 def test_order_of_operation_double_parenthesis():
     tokens = Tokenizer().tokenize("(1337 + 420) * (42 + 1);")
-    assert Parser(tokens).parse_expression() == Operation(
-        Operation(Literal("1337"), Operator("+"), Literal("420")).parenthesize(),
+    assert Parser(tokens).parse_expression() == Expression(
+        Expression(Literal("1337"), Operator("+"), Literal("420")).parenthesize(),
         Operator("*"),
-        Operation(Literal("42"), Operator("+"), Literal("1")).parenthesize(),
+        Expression(Literal("42"), Operator("+"), Literal("1")).parenthesize(),
     )
 
 
@@ -131,5 +131,5 @@ def test_return_variable():
 def test_return_expression():
     tokens = Tokenizer().tokenize("return var + 1;")
     assert Parser(tokens).parse_keyword() == Return(
-        Operation(Identifier("var"), Operator("+"), Literal("1"))
+        Expression(Identifier("var"), Operator("+"), Literal("1"))
     )
