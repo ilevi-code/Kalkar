@@ -65,7 +65,12 @@ class Compiler:
             elif type(operand) is Identifier:
                 self.compile_identifier(operand, is_rhs)
             elif type(operand) is Expression:
-                assert False, "TODO"
+                if is_rhs:
+                    self.output.append("push %rax")
+                self.compile_expression(operand)
+                if is_rhs:
+                    self.output.append("mov %rax, %rbx")
+                    self.output.append("pop %rax")
             else:
                 assert False, f"Unknown expression {statement.expr}"
         self.compile_operator(expr.operator)
