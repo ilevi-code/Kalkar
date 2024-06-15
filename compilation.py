@@ -59,6 +59,7 @@ class Compiler:
                 "call printf",
                 "mov %rbp, %rsp",
                 "pop %rbp",
+                "mov $0, %rax",
                 "ret",
             ]
         )
