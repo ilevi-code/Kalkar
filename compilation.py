@@ -1,5 +1,3 @@
-from blocks import Operation, Assignment
-
 class Compiler:
     PROLOGUE = """
 .global main
