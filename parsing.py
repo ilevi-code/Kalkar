@@ -5,7 +5,7 @@ from errors import CompilationError
 class UnexpectedTokenError(CompilationError):
     def __init__(self, token):
         super().__init__(
-            token.pos, len(token.raw), f'Unexpected expression "{token.raw}"'
+            token.pos, len(token.raw), f'Expected expression before "{token.raw}"'
         )
 
 
@@ -38,16 +38,31 @@ class Operation:
 
     def parenthesize(self):
         self.order = self.ORDER_OF_OPERATIONS["("]
+        return self
+
+    def reorder(self):
+        if type(self.lhs) is Operation and self.lhs.order < self.order:
+            new_root = self.lhs
+            self.lhs = new_root.rhs
+            new_root.rhs = self
+            return new_root
+        if type(self.rhs) is Operation and self.rhs.order < self.order:
+            new_root = self.rhs
+            self.rhs = new_root.lhs
+            new_root.lhs = self
+            return new_root
+        return self
 
     def __eq__(self, other):
         return (
             self.lhs == other.lhs
             and self.operator == other.operator
             and self.rhs == other.rhs
+            and self.order == other.order
         )
 
     def __str__(self):
-        return f"{self.lhs} {self.operator} {self.rhs}"
+        return f"<order={self.order}, {self.lhs} {self.operator} {self.rhs}>"
 
 
 class Assignment:
@@ -83,24 +98,26 @@ class Parser:
             type(self.current_token) is not Operator
             or self.current_token.operator != "="
         ):
-            raise ExpectedTokenError(next_token, "=")
+            raise ExpectedTokenError(self.current_token, "=")
         self.index += 1
         src = self.parse_expression()
         return Assignment(dest, src)
 
     def parse_expression(self):
-        lhs = self.parse_operand()
+        root = self.parse_operand()
 
-        if type(self.current_token) is Seperator:
-            return lhs
-        elif type(self.current_token) is Operator:
-            operator = self.current_token
-            self.index += 1
-            rhs = self.parse_operand()
-            operation = Operation(lhs, operator, rhs)
-            return self.reorder_opreation(operation)
-        else:
-            raise ExpectedTokenError(self.current_token, ";")
+        while True:
+            if type(self.current_token) is Seperator:
+                break
+            elif type(self.current_token) is Operator:
+                operator = self.current_token
+                self.index += 1
+                rhs = self.parse_operand()
+                root = Operation(root, operator, rhs)
+                root = root.reorder()
+            else:
+                raise ExpectedTokenError(self.current_token, ";")
+        return root
 
     def parse_operand(self):
         if type(self.current_token) in [Literal, Identifier]:
@@ -120,14 +137,10 @@ class Parser:
                 raise ExpectedTokenError(self.current_token, ")")
             self.index += 1
             if type(expression) is Operation:
-                expression.parenthesize()
+                return expression.parenthesize()
             return expression
         else:
             raise UnexpectedTokenError(self.current_token)
-
-    def reorder_opreation(self, operation):
-        # TODO
-        return operation
 
     @property
     def current_token(self):
