@@ -5,6 +5,7 @@ import subprocess
 from compilation import Compiler
 from parsing import Parser
 from tokenization import Tokenizer
+from semantic_analysis import SemanticAnalyzer
 from errors import CompilationError
 
 
@@ -18,6 +19,7 @@ def main(path: str, bin_out: str):
     try:
         tokens = Tokenizer().tokenize(content)
         ast = Parser(tokens).parse()
+        SemanticAnalyzer().analyze(ast)
         instructions = Compiler().compile(ast)
     except CompilationError as e:
         print(f"{path}:{e}", file=sys.stderr)
