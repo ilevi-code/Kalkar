@@ -1,4 +1,4 @@
-from blocks import Expression, Assignment, Return
+from blocks import BinaryOperation, Assignment, Return
 from tokens import Identifier, Literal
 
 
@@ -45,7 +45,7 @@ class Compiler:
             self.compile_literal(statement.expr)
         elif type(statement.expr) is Identifier:
             self.compile_identifier(statement.expr)
-        elif type(statement.expr) is Expression:
+        elif type(statement.expr) is BinaryOperation:
             self.compile_expression(statement.expr)
         else:
             assert False, f"Unknown expression {statement.expr}"
@@ -69,7 +69,7 @@ class Compiler:
                 self.compile_literal(operand, is_operand_rhs)
             elif type(operand) is Identifier:
                 self.compile_identifier(operand, is_operand_rhs)
-            elif type(operand) is Expression:
+            elif type(operand) is BinaryOperation:
                 self.compile_expression(operand, is_operand_rhs)
             else:
                 assert False, f"Unknown expression {statement.expr}"
@@ -109,7 +109,7 @@ class Compiler:
             self.compile_literal(src)
         elif type(src) is Identifier:
             self.compile_identifier(src)
-        elif type(src) is Expression:
+        elif type(src) is BinaryOperation:
             self.compile_expression(src)
         stack_pos = self.stack_positions[assignment.dst.name]
         self.output.append(f"mov %rax, {stack_pos}(%rsp)")

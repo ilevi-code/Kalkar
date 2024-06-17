@@ -1,6 +1,6 @@
 from tokenization import Identifier, Literal, Operator, Seperator, Keyword
 from errors import CompilationError
-from blocks import Expression, Assignment, Return
+from blocks import BinaryOperation, Assignment, Return
 
 
 class UnexpectedTokenError(CompilationError):
@@ -67,7 +67,7 @@ class Parser:
                 operator = self.current_token
                 self.index += 1
                 rhs = self.parse_operand()
-                root = Expression(root, operator, rhs)
+                root = BinaryOperation(root, operator, rhs)
                 root = root.reorder()
             else:
                 raise ExpectedTokenError(self.current_token, seperator)
@@ -91,7 +91,7 @@ class Parser:
         ):
             self.index += 1
             expression = self.parse_expression_until_seperator(')')
-            if type(expression) is Expression:
+            if type(expression) is BinaryOperation:
                 return expression.parenthesize()
             return expression
         else:
