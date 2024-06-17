@@ -1,4 +1,4 @@
-from blocks import BinaryOperation, Assignment, Return
+from blocks import BinaryOperation, UnaryOperation, Assignment, Return
 from tokens import Identifier, Literal
 
 
@@ -45,8 +45,10 @@ class Compiler:
             self.compile_literal(statement.expr)
         elif type(statement.expr) is Identifier:
             self.compile_identifier(statement.expr)
+        elif type(statement.expr) is UnaryOperation:
+            self.compile_unary_operation(statement.expr)
         elif type(statement.expr) is BinaryOperation:
-            self.compile_expression(statement.expr)
+            self.compile_binary_operation(statement.expr)
         else:
             assert False, f"Unknown expression {statement.expr}"
         self.output.extend(
@@ -61,19 +63,21 @@ class Compiler:
             ]
         )
 
-    def compile_expression(self, expr, is_rhs=False):
+    def compile_binary_operation(self, operation, is_rhs=False):
         if is_rhs:
             self.output.append("push %rax")
-        for operand, is_operand_rhs in [(expr.lhs, False), (expr.rhs, True)]:
+        for operand, is_operand_rhs in [(operation.lhs, False), (operation.rhs, True)]:
             if type(operand) is Literal:
                 self.compile_literal(operand, is_operand_rhs)
             elif type(operand) is Identifier:
                 self.compile_identifier(operand, is_operand_rhs)
+            elif type(operand) is UnaryOperation:
+                self.compile_unary_operation(operand, is_operand_rhs)
             elif type(operand) is BinaryOperation:
-                self.compile_expression(operand, is_operand_rhs)
+                self.compile_binary_operation(operand, is_operand_rhs)
             else:
                 assert False, f"Unknown expression {statement.expr}"
-        self.compile_operator(expr.operator)
+        self.compile_binary_operator(operation.operator)
         if is_rhs:
             self.output.append("mov %rax, %rbx")
             self.output.append("pop %rax")
@@ -87,7 +91,7 @@ class Compiler:
         stack_pos = self.stack_positions[identifier.name]
         self.output.append(f"mov {stack_pos}(%rsp), %{dest_register}")
 
-    def compile_operator(self, operator):
+    def compile_binary_operator(self, operator):
         if operator.operator == '+':
             self.output.append("add %rbx, %rax")
         elif operator.operator == '-':
@@ -100,6 +104,12 @@ class Compiler:
         else:
             assert False, f"Unknown operator {operator.operator}"
 
+    def compile_unary_operation(self, operation, is_rhs=False):
+        self.compile_literal(operation.operand, is_rhs)
+        dest_register = "rbx" if is_rhs else "rax"
+        if operation.operator.operator == '-':
+            self.output.append(f"neg %{dest_register}")
+
     def compile_assignment(self, assignment):
         if assignment.dst.name not in self.stack_positions:
             self.stack_positions[assignment.dst.name] = self.stack_top
@@ -109,7 +119,9 @@ class Compiler:
             self.compile_literal(src)
         elif type(src) is Identifier:
             self.compile_identifier(src)
+        elif type(src) is UnaryOperation:
+            self.compile_unary_operation(src)
         elif type(src) is BinaryOperation:
-            self.compile_expression(src)
+            self.compile_binary_operation(src)
         stack_pos = self.stack_positions[assignment.dst.name]
         self.output.append(f"mov %rax, {stack_pos}(%rsp)")

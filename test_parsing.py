@@ -1,7 +1,7 @@
 import pytest
 
 from parsing import Parser, EndOfInputError, UnexpectedTokenError, ExpectedTokenError
-from blocks import BinaryOperation, Assignment, Return
+from blocks import BinaryOperation, UnaryOperation, Assignment, Return
 
 from tokenization import Tokenizer, Identifier, Literal, Operator, Seperator, Keyword
 
@@ -118,13 +118,16 @@ def test_order_of_operation_double_parenthesis():
     )
 
 
-def test_nagative_literal():
+def test_negative_literal():
     tokens = Tokenizer().tokenize("-1")
-    assert Parser(tokens).parse_operand() == Literal("-1")
+    assert Parser(tokens).parse_operand() == UnaryOperation(Operator("-"), Literal("1"))
+
 
 def test_return_literal():
     tokens = Tokenizer().tokenize("return -1;")
-    assert Parser(tokens).parse_keyword() == Return(Literal("-1"))
+    assert Parser(tokens).parse_keyword() == Return(
+        UnaryOperation(Operator("-"), Literal("1"))
+    )
 
 
 def test_return_variable():

@@ -1,5 +1,6 @@
 from tokenization import Operator
 
+
 class BinaryOperation:
     ORDER_OF_OPERATIONS = {
         "*": 2,
@@ -46,6 +47,15 @@ class BinaryOperation:
 
     def __str__(self):
         return f"<order={self.order}, {self.lhs} {self.operator} {self.rhs}>"
+
+
+class UnaryOperation:
+    def __init__(self, operator, operand):
+        self.operator = operator
+        self.operand = operand
+
+    def __eq__(self, other):
+        return self.operator == other.operator and self.operand == other.operand
 
 
 class Assignment:
