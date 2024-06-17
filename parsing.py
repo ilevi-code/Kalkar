@@ -74,21 +74,11 @@ class Parser:
         return root
 
     def parse_operand(self):
-        if (
-            type(self.current_token) is Operator
-            and self.current_token.operator == "-"
-            and self.index < len(self.tokens)
-        ):
-            operand = self.tokens[self.index + 1]
-            if type(operand) in [
-                Literal,
-                Identifier,
-            ]:
-                operator = self.current_token
-                self.index += 2
-                return UnaryOperation(operator, operand)
-            else:
-                raise UnexpectedTokenError(next_token)
+        if type(self.current_token) is Operator and self.current_token.operator == "-":
+            operator = self.current_token
+            self.index += 1
+            operand = self.parse_operand()
+            return UnaryOperation(operator, operand)
         if type(self.current_token) in [Literal, Identifier]:
             operand = self.current_token
             self.index += 1

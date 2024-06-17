@@ -57,6 +57,20 @@ def test_multiple_variable():
 
 
 @pytest.mark.parametrize(
+    "code",
+    [
+        "return -3;",
+        "a = 3; return -a;",
+        "a = -2; return a + -1;",
+        "return -(2 + 1);",
+        "return -(-(2 - 5));",
+    ],
+)
+def test_unary_operations(code):
+    assert compile_and_run(code) == -3
+
+
+@pytest.mark.parametrize(
     "code,expected",
     [
         ("return 2 + 3 * 5;", 17),

@@ -118,9 +118,24 @@ def test_order_of_operation_double_parenthesis():
     )
 
 
-def test_negative_literal():
+def test_unary_literal():
     tokens = Tokenizer().tokenize("-1")
     assert Parser(tokens).parse_operand() == UnaryOperation(Operator("-"), Literal("1"))
+
+
+def test_unary_operator_on_expression():
+    tokens = Tokenizer().tokenize("-(1 + 2)")
+    assert Parser(tokens).parse_operand() == UnaryOperation(
+        Operator("-"),
+        BinaryOperation(Literal("1"), Operator("+"), Literal("2")).parenthesize(),
+    )
+
+
+def test_unary_operator_on_seperator():
+    tokens = Tokenizer().tokenize("-(-(1))")
+    assert Parser(tokens).parse_operand() == UnaryOperation(
+        Operator("-"), UnaryOperation(Operator("-"), Literal("1"))
+    )
 
 
 def test_return_literal():

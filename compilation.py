@@ -105,7 +105,17 @@ class Compiler:
             assert False, f"Unknown operator {operator.operator}"
 
     def compile_unary_operation(self, operation, is_rhs=False):
-        self.compile_literal(operation.operand, is_rhs)
+        operand = operation.operand
+        if type(operand) is Literal:
+            self.compile_literal(operand, is_rhs)
+        elif type(operand) is Identifier:
+            self.compile_identifier(operand, is_rhs)
+        elif type(operand) is UnaryOperation:
+            self.compile_unary_operation(operand, is_rhs)
+        elif type(operand) is BinaryOperation:
+            self.compile_binary_operation(operand, is_rhs)
+        else:
+            assert False, f"Unknown expression {statement.expr}"
         dest_register = "rbx" if is_rhs else "rax"
         if operation.operator.operator == '-':
             self.output.append(f"neg %{dest_register}")
