@@ -5,7 +5,7 @@ from tokens import Identifier, Literal
 class Compiler:
     STACK_ALIGNMENT = 0x10
     PROLOGUE = [
-        '.global main',
+        ".global main",
         "main:",
         "push %rbp",
         "mov  %rsp, %rbp",
@@ -38,7 +38,9 @@ class Compiler:
         return total
 
     def align_stack(self):
-        self.stack_top = (self.stack_top + (self.STACK_ALIGNMENT - 1)) & ~(self.STACK_ALIGNMENT-1)
+        self.stack_top = (self.stack_top + (self.STACK_ALIGNMENT - 1)) & ~(
+            self.STACK_ALIGNMENT - 1
+        )
 
     def compile_return(self, statement):
         if type(statement.expr) is Literal:
@@ -92,13 +94,13 @@ class Compiler:
         self.output.append(f"mov {stack_pos}(%rsp), %{dest_register}")
 
     def compile_binary_operator(self, operator):
-        if operator.operator == '+':
+        if operator.operator == "+":
             self.output.append("add %rbx, %rax")
-        elif operator.operator == '-':
+        elif operator.operator == "-":
             self.output.append("sub %rbx, %rax")
-        elif operator.operator == '*':
+        elif operator.operator == "*":
             self.output.append("mul %rbx")
-        elif operator.operator == '/':
+        elif operator.operator == "/":
             self.output.append("xor %rdx, %rdx")
             self.output.append("idiv %rbx")
         else:
@@ -117,7 +119,7 @@ class Compiler:
         else:
             assert False, f"Unknown expression {statement.expr}"
         dest_register = "rbx" if is_rhs else "rax"
-        if operation.operator.operator == '-':
+        if operation.operator.operator == "-":
             self.output.append(f"neg %{dest_register}")
 
     def compile_assignment(self, assignment):

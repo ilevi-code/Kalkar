@@ -1,4 +1,4 @@
-from tokenization import Operator
+from tokens import Operator
 
 
 class BinaryOperation:

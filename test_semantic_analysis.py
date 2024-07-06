@@ -2,8 +2,8 @@ import pytest
 
 from blocks import BinaryOperation, Assignment, Return
 from tokens import Identifier
+from lexing import Tokenizer
 from parsing import Parser
-from tokenization import Tokenizer
 from semantic_analysis import SemanticAnalyzer, SemanticError
 
 

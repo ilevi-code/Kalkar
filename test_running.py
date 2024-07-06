@@ -5,9 +5,9 @@ import os
 
 import pytest
 
-from compilation import Compiler
+from lexing import Tokenizer
 from parsing import Parser
-from tokenization import Tokenizer
+from compilation import Compiler
 
 
 @contextlib.contextmanager

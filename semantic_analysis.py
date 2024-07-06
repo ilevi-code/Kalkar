@@ -1,5 +1,5 @@
 from blocks import BinaryOperation, Assignment, Return
-from tokenization import Identifier
+from lexing import Identifier
 from errors import CompilationError
 
 TYPE_ANALYZERS = {}

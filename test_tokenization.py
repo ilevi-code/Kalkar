@@ -2,7 +2,7 @@ import pytest
 
 from position import Position
 from tokens import Identifier, Keyword, Seperator, Literal, Operator
-from tokenization import Tokenizer, UnknownCharacher, LineScanner
+from lexing import Tokenizer, UnknownCharacher, LineScanner
 
 
 @pytest.mark.parametrize(

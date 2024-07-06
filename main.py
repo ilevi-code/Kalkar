@@ -2,10 +2,10 @@ import click
 import sys
 import subprocess
 
-from compilation import Compiler
+from lexing import Tokenizer
 from parsing import Parser
-from tokenization import Tokenizer
 from semantic_analysis import SemanticAnalyzer
+from compilation import Compiler
 from errors import CompilationError
 
 
