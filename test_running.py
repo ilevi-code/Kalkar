@@ -20,7 +20,7 @@ def temp_path():
 
 def compile_and_run(code: str):
     tokens = Tokenizer().tokenize(code)
-    ast = Parser(tokens).parse()
+    ast = Parser().parse(tokens)
     instructions = Compiler().compile(ast)
     with tempfile.NamedTemporaryFile(mode="w") as output, temp_path() as binary_path:
         output.write("\n".join(instructions))

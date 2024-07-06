@@ -44,29 +44,31 @@ def test_space_skipping():
 
 
 def test_single_identifier():
-    assert Tokenizer().tokenize("var_name")[0].name == "var_name"
+    assert Tokenizer().tokenize("var_name").pop().name == "var_name"
 
 
 def test_single_keyword():
-    assert Tokenizer().tokenize("return")[0].keyword == "return"
+    assert Tokenizer().tokenize("return").pop().keyword == "return"
 
 
 def test_single_operator():
-    assert Tokenizer().tokenize("+")[0].operator == "+"
+    assert Tokenizer().tokenize("+").pop().operator == "+"
 
 
 def test_single_seperator():
-    assert Tokenizer().tokenize("(")[0].seperator == "("
+    assert Tokenizer().tokenize("(").pop().seperator == "("
 
 
 def test_single_literal():
-    assert Tokenizer().tokenize("1337")[0].literal == 1337
+    assert Tokenizer().tokenize("1337").pop().literal == 1337
 
 def test_first_position():
-    assert Tokenizer().tokenize("1337")[0].pos == Position("1337", 1, 0)
+    assert Tokenizer().tokenize("1337").pop().pos == Position("1337", 1, 0)
 
 def test_second_position():
-    assert Tokenizer().tokenize("var =")[1].pos == Position("var =", 1, 4)
+    tokens = Tokenizer().tokenize("var =")
+    tokens.pop()
+    assert tokens.pop().pos == Position("var =", 1, 4)
 
 def test_error_position():
     try:

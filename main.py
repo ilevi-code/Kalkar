@@ -18,7 +18,7 @@ def main(path: str, bin_out: str):
         content = file.read()
     try:
         tokens = Tokenizer().tokenize(content)
-        ast = Parser(tokens).parse()
+        ast = Parser().parse(tokens)
         SemanticAnalyzer().analyze(ast)
         instructions = Compiler().compile(ast)
     except CompilationError as e:

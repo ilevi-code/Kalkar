@@ -1,4 +1,4 @@
-from tokenization import Identifier, Literal, Operator, Seperator, Keyword
+from tokens import Identifier, Literal, Operator, Seperator, Keyword
 from errors import CompilationError
 from blocks import BinaryOperation, UnaryOperation, Assignment, Return
 
@@ -17,97 +17,67 @@ class ExpectedTokenError(CompilationError):
         )
 
 
-class EndOfInputError(CompilationError):
-    def __init__(self, pos):
-        super().__init__(pos, 0, f"Unexpected and of input")
-
-
 class Parser:
-    def __init__(self, tokens: list):
-        self.tokens = tokens
-        self.index = 0
-
-    def parse(self):
+    def parse(self, tokens):
         parsed = []
-        while self.index < len(self.tokens):
-            if type(self.current_token) is Identifier:
-                parsed.append(self.parse_assignment())
-            elif type(self.current_token) is Keyword:
-                parsed.append(self.parse_keyword())
+        while not tokens.is_at_end():
+            if type(tokens.peek()) is Identifier:
+                parsed.append(self.parse_assignment(tokens))
+            elif type(tokens.peek()) is Keyword:
+                parsed.append(self.parse_keyword(tokens))
             else:
-                raise UnexpectedTokenError(self.current_token)
+                raise UnexpectedTokenError(tokens.peek())
         return parsed
 
-    def parse_assignment(self):
-        dest = self.tokens[self.index]
-        self.index += 1
-        if (
-            type(self.current_token) is not Operator
-            or self.current_token.operator != "="
-        ):
-            raise ExpectedTokenError(self.current_token, "=")
-        self.index += 1
-        src = self.parse_expression()
+    def parse_assignment(self, tokens):
+        dest = tokens.pop()
+        maybe_operator = tokens.pop()
+        if type(maybe_operator) is not Operator or maybe_operator.operator != "=":
+            raise ExpectedTokenError(maybe_operator, "=")
+        src = self.parse_expression(tokens)
         return Assignment(dest, src)
 
-    def parse_expression(self):
-        return self.parse_expression_until_seperator(";")
+    def parse_expression(self, tokens):
+        return self.parse_expression_until_seperator(tokens, ";")
 
-    def parse_expression_until_seperator(self, seperator):
-        root = self.parse_operand()
+    def parse_expression_until_seperator(self, tokens, seperator):
+        root = self.parse_operand(tokens)
 
         while True:
-            if type(self.current_token) is Seperator:
-                if self.current_token.seperator == seperator:
-                    self.index += 1
+            curr = tokens.pop()
+            if type(curr) is Seperator:
+                if curr.seperator == seperator:
                     break
                 else:
-                    raise ExpectedTokenError(self.current_token, seperator)
-            elif type(self.current_token) is Operator:
-                operator = self.current_token
-                self.index += 1
-                rhs = self.parse_operand()
+                    raise ExpectedTokenError(curr, seperator)
+            elif type(curr) is Operator:
+                operator = curr
+                rhs = self.parse_operand(tokens)
                 root = BinaryOperation(root, operator, rhs)
                 root = root.reorder()
             else:
                 raise ExpectedTokenError(self.current_token, seperator)
         return root
 
-    def parse_operand(self):
-        if type(self.current_token) is Operator and self.current_token.operator == "-":
-            operator = self.current_token
-            self.index += 1
-            operand = self.parse_operand()
+    def parse_operand(self, tokens):
+        curr = tokens.pop()
+        if type(curr) is Operator and curr.operator == "-":
+            operator = curr
+            operand = self.parse_operand(tokens)
             return UnaryOperation(operator, operand)
-        if type(self.current_token) in [Literal, Identifier]:
-            operand = self.current_token
-            self.index += 1
-            return operand
-        elif (
-            type(self.current_token) is Seperator
-            and self.current_token.seperator == "("
-        ):
-            self.index += 1
-            expression = self.parse_expression_until_seperator(")")
+        if type(curr) in [Literal, Identifier]:
+            return curr
+        elif type(curr) is Seperator and curr.seperator == "(":
+            expression = self.parse_expression_until_seperator(tokens, ")")
             if type(expression) is BinaryOperation:
                 return expression.parenthesize()
             return expression
         else:
-            raise UnexpectedTokenError(self.current_token)
+            raise UnexpectedTokenError(curr)
 
-    def parse_keyword(self):
-        keyword = self.current_token
-        self.index += 1
+    def parse_keyword(self, tokens):
+        keyword = tokens.pop()
         if keyword.keyword == "return":
-            expr = self.parse_expression()
+            expr = self.parse_expression(tokens)
             return Return(expr)
         assert False, f"unsupported keyword {keyword.keyword}"
-
-    @property
-    def current_token(self):
-        try:
-            return self.tokens[self.index]
-        except IndexError:
-            if len(self.tokens) == 0:
-                raise EndOfInputError(Position("", 1, 1))
-            raise EndOfInputError(self.tokens[-1].pos)

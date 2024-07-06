@@ -2,7 +2,8 @@ import string
 
 from position import Position
 from errors import CompilationError
-from tokens import Identifier, Keyword, Seperator, Literal, Operator
+from tokens import Token, Identifier, Keyword, Seperator, Literal, Operator
+from token_stream import TokenStream
 
 
 class UnknownCharacher(CompilationError):
@@ -75,4 +76,4 @@ class Tokenizer:
                         break
                     except ValueError:
                         pass
-        return tokens
+        return TokenStream(tokens)

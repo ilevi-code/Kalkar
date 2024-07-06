@@ -9,7 +9,7 @@ from semantic_analysis import SemanticAnalyzer, SemanticError
 
 def ast_from_code(code: str):
     tokens = Tokenizer().tokenize(code)
-    return Parser(tokens).parse()
+    return Parser().parse(tokens)
 
 
 def test_declaration():
