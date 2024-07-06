@@ -1,9 +1,8 @@
 import pytest
 
-from token_stream import EndOfInputError
 from parsing import Parser, UnexpectedTokenError, ExpectedTokenError
 from blocks import BinaryOperation, UnaryOperation, Assignment, Return
-from lexing import Tokenizer, Identifier, Literal, Operator, Seperator, Keyword
+from lexing import Tokenizer, Identifier, Literal, Operator
 
 
 def test_expression_single_operand():

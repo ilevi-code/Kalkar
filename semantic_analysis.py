@@ -32,7 +32,7 @@ class SemanticAnalyzer:
         analyzer(self, element)
 
     @type_analyzer(Return)
-    def analyze_assignment(self, assignment):
+    def analyze_return(self, assignment):
         self.analyze_type(assignment.expr)
 
     @type_analyzer(Assignment)

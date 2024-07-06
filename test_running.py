@@ -86,5 +86,5 @@ def test_adding_negative_literal():
     assert compile_and_run("a = 7 + -3; return a * 5;") == 20
 
 
-def test_adding_negative_literal():
+def test_adding_return_variable():
     assert compile_and_run("a2 = 4; return a2;") == 4

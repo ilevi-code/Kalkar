@@ -1,6 +1,3 @@
-from tokens import Operator
-
-
 class BinaryOperation:
     ORDER_OF_OPERATIONS = {
         "*": 2,

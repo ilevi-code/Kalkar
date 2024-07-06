@@ -56,7 +56,7 @@ class Parser:
                 root = BinaryOperation(root, operator, rhs)
                 root = root.reorder()
             else:
-                raise ExpectedTokenError(self.current_token, seperator)
+                raise ExpectedTokenError(curr, seperator)
         return root
 
     def parse_operand(self, tokens):

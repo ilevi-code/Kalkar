@@ -78,7 +78,7 @@ class Compiler:
             elif type(operand) is BinaryOperation:
                 self.compile_binary_operation(operand, is_operand_rhs)
             else:
-                assert False, f"Unknown expression {statement.expr}"
+                assert False, f"Unknown expression {operation.expr}"
         self.compile_binary_operator(operation.operator)
         if is_rhs:
             self.output.append("mov %rax, %rbx")
@@ -117,7 +117,7 @@ class Compiler:
         elif type(operand) is BinaryOperation:
             self.compile_binary_operation(operand, is_rhs)
         else:
-            assert False, f"Unknown expression {statement.expr}"
+            assert False, f"Unknown expression {operation.expr}"
         dest_register = "rbx" if is_rhs else "rax"
         if operation.operator.operator == "-":
             self.output.append(f"neg %{dest_register}")

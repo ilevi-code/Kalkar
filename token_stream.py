@@ -1,3 +1,4 @@
+from position import Position
 from tokens import Token
 from errors import CompilationError
 
