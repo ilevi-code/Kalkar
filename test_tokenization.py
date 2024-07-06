@@ -61,13 +61,16 @@ def test_single_seperator():
 def test_single_literal():
     assert Tokenizer().tokenize("1337").pop().literal == 1337
 
+
 def test_first_position():
     assert Tokenizer().tokenize("1337").pop().pos == Position("1337", 1, 0)
+
 
 def test_second_position():
     tokens = Tokenizer().tokenize("var =")
     tokens.pop()
     assert tokens.pop().pos == Position("var =", 1, 4)
+
 
 def test_error_position():
     try:
@@ -76,6 +79,7 @@ def test_error_position():
         assert e.position == Position("a = 1$", 2, 5)
     else:
         assert False, "Didn't raise"
+
 
 def test_unkown_char():
     with pytest.raises(UnknownCharacher):

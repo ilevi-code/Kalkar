@@ -1,5 +1,6 @@
 from position import Position
 
+
 class Token:
     def __init__(self, raw: str, pos: Position):
         self.pos = pos

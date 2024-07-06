@@ -10,7 +10,6 @@ class UnknownCharacher(CompilationError):
         super().__init__(position, 1, f'Unkown character "{unknown}"')
 
 
-
 class LineScanner:
     SPECIAL = Operator.OPERATORS | Seperator.SEPERATORS
 

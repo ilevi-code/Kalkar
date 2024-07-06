@@ -5,4 +5,8 @@ class Position:
         self.offset = offset
 
     def __eq__(self, other):
-        return self.line == other.line and self.line_number == other.line_number and self.offset == other.offset
+        return (
+            self.line == other.line
+            and self.line_number == other.line_number
+            and self.offset == other.offset
+        )

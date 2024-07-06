@@ -9,6 +9,7 @@ def type_analyzer(_type):
     def _inner_decorator(func):
         TYPE_ANALYZERS[_type] = func
         return func
+
     return _inner_decorator
 
 
@@ -47,4 +48,6 @@ class SemanticAnalyzer:
     @type_analyzer(Identifier)
     def analyze_identifier(self, identifier):
         if identifier.name not in self.existing_variables:
-            raise SemanticError(identifier.pos, len(identifier.name), "Undeclared variable")
+            raise SemanticError(
+                identifier.pos, len(identifier.name), "Undeclared variable"
+            )
