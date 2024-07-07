@@ -20,19 +20,6 @@ class BinaryOperation:
         self.is_parenthseized = True
         return self
 
-    def reorder(self):
-        if type(self.lhs) is BinaryOperation and self.is_lower_order(self.lhs):
-            new_root = self.lhs
-            self.lhs = new_root.rhs
-            new_root.rhs = self
-            return new_root
-        if type(self.rhs) is BinaryOperation and self.is_lower_order(self.rhs):
-            new_root = self.rhs
-            self.rhs = new_root.lhs
-            new_root.lhs = self
-            return new_root
-        return self
-
     def __eq__(self, other):
         return (
             self.lhs == other.lhs

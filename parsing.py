@@ -54,7 +54,7 @@ class Parser:
                 operator = curr
                 rhs = self.parse_operand(tokens)
                 root = BinaryOperation(root, operator, rhs)
-                root = root.reorder()
+                root = Parser.encforce_order_of_operation(root)
             else:
                 raise ExpectedTokenError(curr, seperator)
         return root
@@ -81,3 +81,17 @@ class Parser:
             expr = self.parse_expression(tokens)
             return Return(expr)
         assert False, f"unsupported keyword {keyword.keyword}"
+
+    @staticmethod
+    def encforce_order_of_operation(root):
+        if type(root.lhs) is BinaryOperation and root.is_lower_order(root.lhs):
+            new_root = root.lhs
+            root.lhs = new_root.rhs
+            new_root.rhs = root
+            return new_root
+        if type(root.rhs) is BinaryOperation and root.is_lower_order(root.rhs):
+            new_root = root.rhs
+            root.rhs = new_root.lhs
+            new_root.lhs = root
+            return new_root
+        return root
