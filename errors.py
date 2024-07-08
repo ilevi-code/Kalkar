@@ -1,4 +1,5 @@
 from position import Position
+from tokens import Token
 
 
 class CompilationError(Exception):
@@ -6,8 +7,30 @@ class CompilationError(Exception):
         self.position = position
         self.highlight_len = highlight_len
         self.message = message
+        self.secondary_message = None
+
+    def with_secondary_message_at_token(self, token: Token, message: str):
+        self.secondary_message = (
+            CompilationError.highlight(token.pos, len(token.raw), message, "-") + "\n"
+        )
+        return self
 
     def __str__(self):
-        space_pad = " " * self.position.offset
-        highlight = "^" * self.highlight_len
-        return f"{self.position.line_number}: {self.message}\n{self.position.line}\n{space_pad}{highlight}"
+        message = self.secondary_message or ""
+        return message + CompilationError.highlight(
+            self.position, self.highlight_len, self.message, "^"
+        )
+
+    @staticmethod
+    def highlight(
+        position: Position, highlight_len: int, message: str, char_under: str
+    ):
+        space_pad = " " * position.offset
+        highlight = "^" * highlight_len
+        line_number_fill = " " * len(str(position.line_number))
+        return "\n".join(
+            [
+                f"{position.line_number} | {position.line}",
+                f"{line_number_fill} | {space_pad}{highlight} {message}",
+            ]
+        )
