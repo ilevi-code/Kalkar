@@ -22,7 +22,7 @@ def main(path: str, bin_out: str):
         SemanticAnalyzer().analyze(ast)
         instructions = Compiler().compile(ast)
     except CompilationError as e:
-        print(f"{path}:{e}", file=sys.stderr)
+        print(f'Error compiling "{path}":\n{e}', file=sys.stderr)
         return
     with open(asm_out, "w") as output:
         output.write("\n".join(instructions))
