@@ -1,4 +1,7 @@
+from functools import singledispatchmethod
+
 from tokens import Identifier, Literal, Operator, Seperator, Keyword
+from token_stream import TokenStream
 from errors import CompilationError
 from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 
@@ -18,19 +21,19 @@ class ExpectedTokenError(CompilationError):
 
 
 class Parser:
-    def parse(self, tokens):
+    def parse(self, tokens: TokenStream):
         parsed = []
         while not tokens.is_at_end():
-            if type(tokens.peek()) is Identifier:
-                parsed.append(self.parse_assignment(tokens))
-            elif type(tokens.peek()) is Keyword:
-                parsed.append(self.parse_keyword(tokens))
-            else:
-                raise UnexpectedTokenError(tokens.peek())
+            token = tokens.pop()
+            parsed.append(self.parse_token(token, tokens))
         return parsed
 
-    def parse_assignment(self, tokens):
-        dest = tokens.pop()
+    @singledispatchmethod
+    def parse_token(self, token, tokens: TokenStream):
+        raise UnexpectedTokenError(token)
+
+    @parse_token.register
+    def parse_assignment(self, dest: Identifier, tokens: TokenStream):
         maybe_operator = tokens.pop()
         if type(maybe_operator) is not Operator or maybe_operator.operator != "=":
             raise ExpectedTokenError(maybe_operator, "=")
@@ -44,44 +47,61 @@ class Parser:
         root = self.parse_operand(tokens)
 
         while True:
-            curr = tokens.pop()
-            if type(curr) is Seperator:
-                if curr.seperator == seperator:
+            token = tokens.pop()
+            if type(token) is Seperator:
+                if token.seperator == seperator:
                     break
                 else:
-                    raise ExpectedTokenError(curr, seperator)
-            elif type(curr) is Operator:
-                operator = curr
+                    raise ExpectedTokenError(token, seperator)
+            elif type(token) is Operator:
+                operator = token
                 rhs = self.parse_operand(tokens)
                 root = BinaryOperation(root, operator, rhs)
                 root = Parser.encforce_order_of_operation(root)
             else:
-                raise ExpectedTokenError(curr, seperator)
+                raise ExpectedTokenError(token, seperator)
         return root
 
     def parse_operand(self, tokens):
-        curr = tokens.pop()
-        if type(curr) is Operator and curr.operator == "-":
-            operator = curr
+        token = tokens.pop()
+        return self._parse_operand(token, tokens)
+
+    @singledispatchmethod
+    def _parse_operand(self, token, tokens: TokenStream):
+        raise UnexpectedTokenError(token)
+
+    @_parse_operand.register
+    def _(self, operator: Operator, tokens: TokenStream):
+        if operator.operator == "-":
             operand = self.parse_operand(tokens)
             return UnaryOperation(operator, operand)
-        if type(curr) in [Literal, Identifier]:
-            return curr
-        elif type(curr) is Seperator and curr.seperator == "(":
-            expression = self.parse_expression_until_seperator(tokens, ")")
-            if type(expression) is BinaryOperation:
-                return expression.parenthesize()
-            return expression
         else:
-            raise UnexpectedTokenError(curr)
+            raise UnexpectedTokenError(operator)
 
-    def parse_keyword(self, tokens):
-        keyword = tokens.pop()
-        if keyword.keyword == "return":
-            return self.parse_return(tokens)
-        if keyword.keyword == "let":
-            return self.parse_decleration(tokens)
-        assert False, f"unsupported keyword {keyword.keyword}"
+    @_parse_operand.register(Identifier)
+    @_parse_operand.register(Literal)
+    def _(self, token, tokens: TokenStream):
+        return token
+
+    @_parse_operand.register
+    def _(self, seperator: Seperator, tokens: TokenStream):
+        if seperator.seperator != "(":
+            raise UnexpectedTokenError(seperator)
+        expression = self.parse_expression_until_seperator(tokens, ")")
+        if type(expression) is BinaryOperation:
+            return expression.parenthesize()
+        return expression
+
+    @parse_token.register
+    def parse_keyword(self, keyword: Keyword, tokens: TokenStream):
+        parsers = {
+            "return": self.parse_return,
+            "let": self.parse_decleration,
+        }
+        try:
+            return parsers[keyword.keyword](tokens)
+        except KeyError:
+            raise CompilationError(keyword.pos, len(keyword.keyword), "Unsupported keyword")
 
     def parse_return(self, tokens):
         expr = self.parse_expression(tokens)

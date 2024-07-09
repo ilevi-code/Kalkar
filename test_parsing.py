@@ -52,21 +52,21 @@ def test_missing_closing_parenthesis():
 
 def test_simple_assignment():
     tokens = Tokenizer().tokenize("var = 3;")
-    assert Parser().parse_assignment(tokens) == Assignment(
+    assert Parser().parse(tokens)[0] == Assignment(
         Identifier("var"), Literal("3")
     )
 
 
 def test_variable_copy():
     tokens = Tokenizer().tokenize("foo = bar;")
-    assert Parser().parse_assignment(tokens) == Assignment(
+    assert Parser().parse(tokens)[0] == Assignment(
         Identifier("foo"), Identifier("bar")
     )
 
 
 def test_assigment_of_operation():
     tokens = Tokenizer().tokenize("foo = 1337 - 420;")
-    assert Parser().parse_assignment(tokens) == Assignment(
+    assert Parser().parse(tokens)[0] == Assignment(
         Identifier("foo"),
         BinaryOperation(Literal("1337"), Operator("-"), Literal("420")),
     )
@@ -136,22 +136,27 @@ def test_unary_operator_on_seperator():
         Operator("-"), UnaryOperation(Operator("-"), Literal("1"))
     )
 
+def test_invalid_unary_operator():
+    tokens = Tokenizer().tokenize("/1")
+    with pytest.raises(UnexpectedTokenError):
+        assert Parser().parse_operand(tokens)
+
 
 def test_return_literal():
     tokens = Tokenizer().tokenize("return -1;")
-    assert Parser().parse_keyword(tokens) == Return(
+    assert Parser().parse(tokens)[0] == Return(
         UnaryOperation(Operator("-"), Literal("1"))
     )
 
 
 def test_return_variable():
     tokens = Tokenizer().tokenize("return var;")
-    assert Parser().parse_keyword(tokens) == Return(Identifier("var"))
+    assert Parser().parse(tokens)[0] == Return(Identifier("var"))
 
 
 def test_return_expression():
     tokens = Tokenizer().tokenize("return var + 1;")
-    assert Parser().parse_keyword(tokens) == Return(
+    assert Parser().parse(tokens)[0] == Return(
         BinaryOperation(Identifier("var"), Operator("+"), Literal("1"))
     )
 
@@ -165,7 +170,7 @@ def test_multiple_statements():
 
 
 def test_consecutive_keywords():
-    tokens = Tokenizer().tokenize("return return")
+    tokens = Tokenizer().tokenize("return let")
     with pytest.raises(UnexpectedTokenError):
         assert Parser().parse(tokens)
 
