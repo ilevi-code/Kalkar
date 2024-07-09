@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import ClassVar, Dict, Union
 from dataclasses import dataclass
 
-from tokens import Token, Operator, Identifier, Literal
+from tokens import Operator, Identifier, Literal
 
 
 @dataclass

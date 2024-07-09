@@ -1,6 +1,6 @@
 from tokens import Identifier, Literal, Operator, Seperator, Keyword
 from errors import CompilationError
-from blocks import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
+from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 
 
 class UnexpectedTokenError(CompilationError):

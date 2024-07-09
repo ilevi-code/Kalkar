@@ -1,6 +1,6 @@
 from typing import Dict
 
-from blocks import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
+from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 from lexing import Identifier, Literal
 from errors import CompilationError
 

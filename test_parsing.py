@@ -1,7 +1,7 @@
 import pytest
 
 from parsing import Parser, UnexpectedTokenError, ExpectedTokenError
-from blocks import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
+from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 from lexing import Tokenizer, Identifier, Literal, Operator
 
 

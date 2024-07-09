@@ -1,4 +1,4 @@
-from blocks import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
+from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 from tokens import Identifier, Literal
 
 
