@@ -1,18 +1,9 @@
 from typing import Dict
+from functools import singledispatchmethod
 
 from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 from lexing import Identifier, Literal
 from errors import CompilationError
-
-TYPE_ANALYZERS = {}
-
-
-def type_analyzer(_type):
-    def _inner_decorator(func):
-        TYPE_ANALYZERS[_type] = func
-        return func
-
-    return _inner_decorator
 
 
 class SemanticError(CompilationError):
@@ -50,42 +41,42 @@ class SemanticAnalyzer:
         for block in ast:
             self.analyze_once(block)
 
+    @singledispatchmethod
     def analyze_once(self, element):
-        analyzer = TYPE_ANALYZERS[type(element)]
-        analyzer(self, element)
+        raise TypeError(f"No lowering implemented for {type(element)}")
 
-    @type_analyzer(Decleration)
-    def analyze_decleration(self, decleration):
+    @analyze_once.register
+    def analyze_decleration(self, decleration: Decleration):
         self.analyze_once(decleration.expr)
         self.assert_undeclrated(decleration.identifier)
         self.symbol_table[decleration.identifier.name] = Variable(
             decleration.identifier
         )
 
-    @type_analyzer(Return)
-    def analyze_return(self, assignment):
-        self.analyze_once(assignment.expr)
+    @analyze_once.register
+    def analyze_return(self, _return: Return):
+        self.analyze_once(_return.expr)
 
-    @type_analyzer(Assignment)
-    def analyze_assignment(self, assignment):
+    @analyze_once.register
+    def analyze_assignment(self, assignment: Assignment):
         self.analyze_once(assignment.src)
         self.assert_declrated(assignment.dst)
 
-    @type_analyzer(BinaryOperation)
-    def analyze_binary_operation(self, operation):
+    @analyze_once.register
+    def analyze_binary_operation(self, operation: BinaryOperation):
         for operand in [operation.rhs, operation.lhs]:
             self.analyze_once(operand)
 
-    @type_analyzer(UnaryOperation)
-    def analyze_unary_operation(self, operation):
+    @analyze_once.register
+    def analyze_unary_operation(self, operation: UnaryOperation):
         self.analyze_once(operation.operand)
 
-    @type_analyzer(Identifier)
-    def analyze_identifier(self, identifier):
+    @analyze_once.register
+    def analyze_identifier(self, identifier: Identifier):
         self.assert_declrated(identifier)
 
-    @type_analyzer(Literal)
-    def analyze_literal(self, _):
+    @analyze_once.register
+    def analyze_literal(self, _: Literal):
         pass
 
     def assert_declrated(self, identifier):
