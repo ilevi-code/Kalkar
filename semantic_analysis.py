@@ -37,9 +37,14 @@ class UndeclaredError(SemanticError):
         self.identifier = identifier
 
 
+class Variable:
+    def __init__(self, identifier):
+        self.identifier = identifier
+
+
 class SemanticAnalyzer:
     def __init__(self):
-        self.existing_variables: Dict[str, Identifier] = {}
+        self.symbol_table: Dict[str, Variable] = {}
 
     def analyze(self, ast):
         for block in ast:
@@ -53,7 +58,9 @@ class SemanticAnalyzer:
     def analyze_decleration(self, decleration):
         self.analyze_once(decleration.expr)
         self.assert_undeclrated(decleration.identifier)
-        self.existing_variables[decleration.identifier.name] = decleration.identifier
+        self.symbol_table[decleration.identifier.name] = Variable(
+            decleration.identifier
+        )
 
     @type_analyzer(Return)
     def analyze_return(self, assignment):
@@ -82,12 +89,12 @@ class SemanticAnalyzer:
         pass
 
     def assert_declrated(self, identifier):
-        if identifier.name not in self.existing_variables:
+        if identifier.name not in self.symbol_table:
             raise UndeclaredError(identifier)
 
     def assert_undeclrated(self, identifier):
         try:
-            previous_decleration = self.existing_variables[identifier.name]
-            raise RedelerationError(previous_decleration, identifier)
+            previous_decleration = self.symbol_table[identifier.name]
+            raise RedelerationError(previous_decleration.identifier, identifier)
         except KeyError:
             pass
