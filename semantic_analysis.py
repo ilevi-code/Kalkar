@@ -43,35 +43,35 @@ class SemanticAnalyzer:
 
     def analyze(self, ast):
         for block in ast:
-            self.analyze_type(block)
+            self.analyze_once(block)
 
-    def analyze_type(self, element):
+    def analyze_once(self, element):
         analyzer = TYPE_ANALYZERS[type(element)]
         analyzer(self, element)
 
     @type_analyzer(Decleration)
     def analyze_decleration(self, decleration):
-        self.analyze_type(decleration.expr)
+        self.analyze_once(decleration.expr)
         self.assert_undeclrated(decleration.identifier)
         self.existing_variables[decleration.identifier.name] = decleration.identifier
 
     @type_analyzer(Return)
     def analyze_return(self, assignment):
-        self.analyze_type(assignment.expr)
+        self.analyze_once(assignment.expr)
 
     @type_analyzer(Assignment)
     def analyze_assignment(self, assignment):
-        self.analyze_type(assignment.src)
+        self.analyze_once(assignment.src)
         self.assert_declrated(assignment.dst)
 
     @type_analyzer(BinaryOperation)
     def analyze_binary_operation(self, operation):
         for operand in [operation.rhs, operation.lhs]:
-            self.analyze_type(operand)
+            self.analyze_once(operand)
 
     @type_analyzer(UnaryOperation)
     def analyze_unary_operation(self, operation):
-        self.analyze_type(operation.operand)
+        self.analyze_once(operation.operand)
 
     @type_analyzer(Identifier)
     def analyze_identifier(self, identifier):
