@@ -1,6 +1,6 @@
 from tokens import Identifier, Literal, Operator, Seperator, Keyword
 from errors import CompilationError
-from blocks import BinaryOperation, UnaryOperation, Assignment, Return
+from blocks import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 
 
 class UnexpectedTokenError(CompilationError):
@@ -78,9 +78,24 @@ class Parser:
     def parse_keyword(self, tokens):
         keyword = tokens.pop()
         if keyword.keyword == "return":
-            expr = self.parse_expression(tokens)
-            return Return(expr)
+            return self.parse_return(tokens)
+        if keyword.keyword == "let":
+            return self.parse_decleration(tokens)
         assert False, f"unsupported keyword {keyword.keyword}"
+
+    def parse_return(self, tokens):
+        expr = self.parse_expression(tokens)
+        return Return(expr)
+
+    def parse_decleration(self, tokens):
+        maybe_identifier = tokens.pop()
+        if type(maybe_identifier) is not Identifier:
+            raise ExpectedTokenError(maybe_identifier, "identifier")
+        maybe_equal_sign = tokens.pop()
+        if type(maybe_equal_sign) is not Operator or maybe_equal_sign.operator != "=":
+            raise ExpectedTokenError(maybe_equal_sign, "=")
+        expression = self.parse_expression(tokens)
+        return Decleration(maybe_identifier, expression)
 
     @staticmethod
     def encforce_order_of_operation(root):

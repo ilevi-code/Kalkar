@@ -1,7 +1,7 @@
 import pytest
 
 from parsing import Parser, UnexpectedTokenError, ExpectedTokenError
-from blocks import BinaryOperation, UnaryOperation, Assignment, Return
+from blocks import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 from lexing import Tokenizer, Identifier, Literal, Operator
 
 
@@ -162,3 +162,32 @@ def test_multiple_statements():
         Assignment(Identifier("var"), Literal("2")),
         Return(Identifier("var")),
     ]
+
+
+def test_consecutive_keywords():
+    tokens = Tokenizer().tokenize("return return")
+    with pytest.raises(UnexpectedTokenError):
+        assert Parser().parse(tokens)
+
+
+def test_decleration_without_identifier():
+    tokens = Tokenizer().tokenize("let = 1")
+    with pytest.raises(ExpectedTokenError):
+        assert Parser().parse(tokens)
+
+
+def test_decleration_without_equal_sign():
+    tokens = Tokenizer().tokenize("let a 1;")
+    with pytest.raises(ExpectedTokenError):
+        assert Parser().parse(tokens)
+
+
+def test_decleration_without_expression():
+    tokens = Tokenizer().tokenize("let a = ;")
+    with pytest.raises(UnexpectedTokenError):
+        assert Parser().parse(tokens)
+
+
+def test_variable_decleration():
+    tokens = Tokenizer().tokenize("let a = 1;")
+    assert Parser().parse(tokens) == [Decleration(Identifier("a"), Literal("1"))]

@@ -42,6 +42,15 @@ class UnaryOperation:
         return self.operator == other.operator and self.operand == other.operand
 
 
+class Decleration:
+    def __init__(self, identifier, expr):
+        self.identifier = identifier
+        self.expr = expr
+
+    def __eq__(self, other):
+        return self.identifier == other.identifier and self.expr == other.expr
+
+
 class Assignment:
     def __init__(self, dst, src):
         self.dst = dst

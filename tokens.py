@@ -20,7 +20,7 @@ class Identifier(Token):
 
 
 class Keyword(Token):
-    KEYWORDS = {"return"}
+    KEYWORDS = {"return", "let"}
 
     def __init__(self, keyword: str, pos: Position = None):
         super().__init__(keyword, pos)

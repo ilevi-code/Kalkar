@@ -1,4 +1,4 @@
-from blocks import BinaryOperation, UnaryOperation, Assignment, Return
+from blocks import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
 from tokens import Identifier, Literal
 
 
@@ -27,6 +27,8 @@ class Compiler:
                 self.compile_return(block)
             elif type(block) is Assignment:
                 self.compile_assignment(block)
+            elif type(block) is Decleration:
+                self.compile_decleration(block)
             else:
                 assert False, f"Unknown expression {block}"
         self.align_stack()
@@ -123,17 +125,21 @@ class Compiler:
             self.output.append(f"neg %{dest_register}")
 
     def compile_assignment(self, assignment):
-        if assignment.dst.name not in self.stack_positions:
-            self.stack_positions[assignment.dst.name] = self.stack_top
-            self.stack_top += 8
-        src = assignment.src
-        if type(src) is Literal:
-            self.compile_literal(src)
-        elif type(src) is Identifier:
-            self.compile_identifier(src)
-        elif type(src) is UnaryOperation:
-            self.compile_unary_operation(src)
-        elif type(src) is BinaryOperation:
-            self.compile_binary_operation(src)
+        self.compile_expression(assignment.src)
         stack_pos = self.stack_positions[assignment.dst.name]
         self.output.append(f"mov %rax, {stack_pos}(%rsp)")
+
+    def compile_expression(self, expr):
+        if type(expr) is Literal:
+            self.compile_literal(expr)
+        elif type(expr) is Identifier:
+            self.compile_identifier(expr)
+        elif type(expr) is UnaryOperation:
+            self.compile_unary_operation(expr)
+        elif type(expr) is BinaryOperation:
+            self.compile_binary_operation(expr)
+
+    def compile_decleration(self, decleration):
+        self.stack_positions[decleration.identifier.name] = self.stack_top
+        self.stack_top += 8
+        self.compile_assignment(Assignment(decleration.identifier, decleration.expr))

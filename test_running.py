@@ -7,6 +7,7 @@ import pytest
 
 from lexing import Tokenizer
 from parsing import Parser
+from semantic_analysis import SemanticAnalyzer
 from compilation import Compiler
 
 
@@ -21,6 +22,7 @@ def temp_path():
 def compile_and_run(code: str):
     tokens = Tokenizer().tokenize(code)
     ast = Parser().parse(tokens)
+    SemanticAnalyzer().analyze(ast)
     instructions = Compiler().compile(ast)
     with tempfile.NamedTemporaryFile(mode="w") as output, temp_path() as binary_path:
         output.write("\n".join(instructions))
@@ -49,19 +51,22 @@ def test_divistion():
 
 
 def test_return_variable():
-    assert compile_and_run("a = 2; return a;") == 2
+    assert compile_and_run("let a = 2; return a;") == 2
 
 
 def test_multiple_variable():
-    assert compile_and_run("a=1;b=2;c=3;d=4;e=5;return a+b+c+d+e;") == 15
+    assert (
+        compile_and_run("let a=1; let b=2;let c=3;let d=4;let e=5;return a+b+c+d+e;")
+        == 15
+    )
 
 
 @pytest.mark.parametrize(
     "code",
     [
         "return -3;",
-        "a = 3; return -a;",
-        "a = -2; return a + -1;",
+        "let a = 3; return -a;",
+        "let a = -2; return a + -1;",
         "return -(2 + 1);",
         "return -(-(2 - 5));",
     ],
@@ -83,8 +88,12 @@ def test_order_of_operations(code, expected):
 
 
 def test_adding_negative_literal():
-    assert compile_and_run("a = 7 + -3; return a * 5;") == 20
+    assert compile_and_run("let a = 7 + -3; return a * 5;") == 20
 
 
 def test_adding_return_variable():
-    assert compile_and_run("a2 = 4; return a2;") == 4
+    assert compile_and_run("let a2 = 4; return a2;") == 4
+
+
+def test_adding_two_variables():
+    assert compile_and_run("let a = 1; let b = 2; let c = a + b; return c;") == 3
