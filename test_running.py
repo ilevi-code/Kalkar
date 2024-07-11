@@ -44,8 +44,37 @@ def test_nagtive_literal():
     assert compile_and_run("return -1;") == -1
 
 
+def test_addition():
+    assert compile_and_run("return 2 + 3;") == 5
+
+
 def test_multiplication():
     assert compile_and_run("return 2 * 3;") == 6
+
+
+def test_operation_on_self():
+    assert compile_and_run("let a = 1; a = a + 2; return a;") == 3
+
+
+def test_use_after_store():
+    # Multiplication ansures usage of two registers, and forces store of "a"
+    assert compile_and_run("let a = 1; let b = 1 * 3; return a;") == 1
+
+
+@pytest.mark.parametrize(
+    "code",
+    ["let a = 3; let b = 2; return a * b;", "let a = 3; let b = 2; return b * a;"],
+)
+def test_order_of_usage(code):
+    assert compile_and_run(code) == 6
+
+
+@pytest.mark.parametrize(
+    "code",
+    ["let a = 3; let b = 2; return a * b;", "let b = 2; let a = 3; return a * b;"],
+)
+def test_order_of_decleration(code):
+    assert compile_and_run(code) == 6
 
 
 def test_divistion():
@@ -56,7 +85,15 @@ def test_return_variable():
     assert compile_and_run("let a = 2; return a;") == 2
 
 
-def test_multiple_variable():
+def test_two_variable():
+    assert compile_and_run("let a = 2; let b = 3; return a + b;") == 5
+
+
+def test_three_variable():
+    assert compile_and_run("let a=1; let b=2;let c=3;return a+b+c;") == 6
+
+
+def test_five_variable():
     assert (
         compile_and_run("let a=1; let b=2;let c=3;let d=4;let e=5;return a+b+c+d+e;")
         == 15
