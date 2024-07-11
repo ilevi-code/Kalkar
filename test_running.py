@@ -8,7 +8,8 @@ import pytest
 from lexing import Tokenizer
 from parsing import Parser
 from semantic_analysis import SemanticAnalyzer
-from compilation import Compiler
+from ast_lowering import LoweringPass
+from code_gen import CodeGen
 
 
 @contextlib.contextmanager
@@ -23,7 +24,8 @@ def compile_and_run(code: str):
     tokens = Tokenizer().tokenize(code)
     ast = Parser().parse(tokens)
     SemanticAnalyzer().analyze(ast)
-    instructions = Compiler().compile(ast)
+    ir = LoweringPass().lower(ast)
+    instructions = CodeGen().code_gen(ir)
     with tempfile.NamedTemporaryFile(mode="w") as output, temp_path() as binary_path:
         output.write("\n".join(instructions))
         output.flush()

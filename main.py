@@ -5,7 +5,8 @@ import subprocess
 from lexing import Tokenizer
 from parsing import Parser
 from semantic_analysis import SemanticAnalyzer
-from compilation import Compiler
+from ast_lowering import LoweringPass
+from code_gen import CodeGen
 from errors import CompilationError
 
 
@@ -20,7 +21,8 @@ def main(path: str, bin_out: str):
         tokens = Tokenizer().tokenize(content)
         ast = Parser().parse(tokens)
         SemanticAnalyzer().analyze(ast)
-        instructions = Compiler().compile(ast)
+        ir = LoweringPass().lower(ast)
+        instructions = CodeGen().code_gen(ir)
     except CompilationError as e:
         print(f'Error compiling "{path}":\n{e}', file=sys.stderr)
         return
