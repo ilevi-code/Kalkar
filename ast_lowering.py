@@ -41,11 +41,6 @@ class LoweringPass:
 
     @lower_once.register
     def _(self, binary_op: ast.BinaryOperation):
-        # TOOD
-        # By processing arguments serially, the tree is deepest on the right.
-        # (assuming all operation are of the same deegree).
-        # rotating trees to be deepest on lhs will end up with less
-        # stores on the stack.
         rhs = self.lower_once(binary_op.rhs)
         lhs = self.lower_once(binary_op.lhs)
         dest = self.new_temp_var()
