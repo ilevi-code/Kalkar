@@ -161,7 +161,7 @@ class CodeGen:
         self.assure_variable_in_reg(lhs, "rax")
         self.output.extend(
             [
-                "xor %rdx, %rdx",
+                "cqo",
                 f"idiv %{rhs.reg}",
             ]
         )
