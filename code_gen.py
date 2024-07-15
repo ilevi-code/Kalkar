@@ -149,7 +149,12 @@ class CodeGen:
 
     def compile_mul(self, lhs: Variable, rhs: Variable):
         self.assure_variable_in_reg(lhs, "rax")
-        self.output.append(f"mul %{rhs.reg}")
+        self.output.extend(
+            [
+                "cqo",
+                f"mul %{rhs.reg}",
+            ]
+        )
         return "rax"
 
     def assure_variable_in_reg(self, var: Variable, reg: str):
