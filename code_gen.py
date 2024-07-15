@@ -83,12 +83,12 @@ class CodeGen:
         except KeyError:
             return
         self.store(var)
+        self.free_reg(var.reg)
 
     def store(self, var: Variable):
         if var.stack_pos is None:
             var.stack_pos = self.alloc_stack()
         self.output.append(f"mov %{var.reg}, {var.stack_pos}(%rsp)")
-        self.free_reg(var.reg)
 
     def alloc_stack(self):
         pos = self.stack_top
