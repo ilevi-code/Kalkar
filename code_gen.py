@@ -104,8 +104,16 @@ class CodeGen:
     @compile_instruction.register
     def compile_unary_op(self, operation: UnaryOperation):
         assert operation.op == "-"
-        var = self.load(operation.var)
+        var = self.load_backup(operation.var)
         self.output.append(f"neg %{var.reg}")
+
+    def load_backup(self, var_name, exclude_reg=None):
+        var = self.get_var(var_name)
+        if var.reg is None:
+            self.load(var_name, exclude_reg)
+        else:
+            self.store(var)
+        return var
 
     def load(self, var_name: str, exclude_reg=None) -> Variable:
         var = self.get_var(var_name)
@@ -124,7 +132,7 @@ class CodeGen:
             "*": self.compile_mul,
             "/": self.compile_div,
         }[operation.op]
-        lhs = self.load(operation.lhs)
+        lhs = self.load_backup(operation.lhs)
         rhs = self.load(operation.rhs, exclude_reg=lhs.reg)
         output_reg = operation_compiler(lhs, rhs)
         output_var = self.get_var(operation.dest)
