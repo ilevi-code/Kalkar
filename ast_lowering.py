@@ -50,7 +50,7 @@ class LoweringPass:
     @lower_once.register
     def _(self, literal: Literal):
         var_name = self.new_temp_var()
-        self.ir.append(LoadConstant(var_name, literal.literal))
+        self.ir.append(LoadConstant(var_name, int(literal.literal)))
         return var_name
 
     @lower_once.register

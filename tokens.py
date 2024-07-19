@@ -1,67 +1,58 @@
+import re
+from dataclasses import dataclass, field, KW_ONLY
+from typing import Optional, ClassVar, Union
 from position import Position
 
 
+@dataclass
 class Token:
-    def __init__(self, raw: str, pos: Position):
-        self.pos = pos
-        self.raw = raw
+    _: KW_ONLY
+    pos: Optional[Position] = field(default=None, compare=False, repr=False)
 
-    def __repr__(self):
-        return f"{type(self).__name__}({self.raw})"
-
-
-class Identifier(Token):
-    def __init__(self, name: str, pos: Position = None):
-        super().__init__(name, pos)
-        self.name = name
-
-    def __eq__(self, other):
-        return self.name == other.name
+    def value(self) -> str:
+        return self.pos.line.content[self.pos.start : self.pos.end]
 
 
+@dataclass
 class Keyword(Token):
-    KEYWORDS = {"return", "let"}
+    PATTERN: ClassVar[re.Pattern] = re.compile(r"(let|return)")
 
-    def __init__(self, keyword: str, pos: Position = None):
-        super().__init__(keyword, pos)
-        if keyword not in self.KEYWORDS:
-            raise ValueError()
-        self.keyword = keyword
-
-    def __eq__(self, other):
-        return self.keyword == other.keyword
+    keyword: str
 
 
+@dataclass
+class Identifier(Token):
+    PATTERN: ClassVar[re.Pattern] = re.compile(r"([_\w][_\w\d]*)")
+
+    name: str
+
+
+@dataclass
+class Whitespace(Token):
+    PATTERN: ClassVar[re.Pattern] = re.compile(r"(\s+)")
+
+    spaces: str
+
+
+@dataclass
 class Seperator(Token):
-    SEPERATORS = set("();")
+    PATTERN: ClassVar[re.Pattern] = re.compile(r"([\(\);])")
 
-    def __init__(self, seperator: str, pos: Position = None):
-        super().__init__(seperator, pos)
-        if seperator not in self.SEPERATORS:
-            raise ValueError()
-        self.seperator = seperator
-
-    def __eq__(self, other):
-        return self.seperator == other.seperator
+    seperator: str
 
 
+@dataclass
 class Literal(Token):
-    def __init__(self, literal: str, pos: Position = None):
-        super().__init__(literal, pos)
-        self.literal = int(literal)
+    PATTERN: ClassVar[re.Pattern] = re.compile(r"(\d+)")
 
-    def __eq__(self, other):
-        return self.literal == other.literal
+    literal: str
 
 
+@dataclass
 class Operator(Token):
-    OPERATORS = set("+-*/=")
+    PATTERN: ClassVar[re.Pattern] = re.compile(r"([\+\*-/=])")
 
-    def __init__(self, operator: str, pos: Position = None):
-        super().__init__(operator, pos)
-        if operator not in self.OPERATORS:
-            raise ValueError()
-        self.operator = operator
+    operator: str
 
-    def __eq__(self, other):
-        return self.operator == other.operator
+
+TokenKind = Union[Whitespace, Operator, Seperator, Keyword, Literal, Identifier]

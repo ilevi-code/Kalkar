@@ -1,4 +1,3 @@
-from position import Position
 from tokens import Token
 from errors import CompilationError
 
@@ -11,14 +10,14 @@ class EndOfInputError(CompilationError):
 class TokenStream:
     def __init__(self, tokens: list):
         self.tokens = tokens
+        if len(self.tokens) == 0:
+            raise ValueError("Token list is empty")
         self.index = 0
 
     def peek(self) -> Token:
         try:
             return self.tokens[self.index]
         except IndexError:
-            if len(self.tokens) == 0:
-                raise EndOfInputError(Position("", 1, 1))
             raise EndOfInputError(self.tokens[-1].pos)
 
     def pop(self) -> Token:
@@ -31,3 +30,6 @@ class TokenStream:
 
     def __len__(self):
         return len(self.index)
+
+    def __repr__(self):
+        return f"TokenStream({self.tokens})"

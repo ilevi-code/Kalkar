@@ -1,76 +1,43 @@
-from position import Position
+from typing import List
+
+from position import Position, Line
 from errors import CompilationError
-from tokens import Identifier, Keyword, Seperator, Literal, Operator
+from tokens import Token, Identifier, Keyword, Seperator, Literal, Operator, Whitespace
 from token_stream import TokenStream
 
 
 class UnknownCharacher(CompilationError):
     def __init__(self, position: Position):
-        unknown = position.line[position.offset]
-        super().__init__(position, 1, f'Unkown character "{unknown}"')
-
-
-class LineScanner:
-    SPECIAL = Operator.OPERATORS | Seperator.SEPERATORS
-
-    def __init__(self, line: str, line_number: int):
-        self.line = line
-        self.index = 0
-        self.line_number = line_number
-        self.prev_index = None
-
-    def is_num(self) -> bool:
-        return self.line[self.index].isnumeric()
-
-    def is_special(self) -> bool:
-        return self.line[self.index] in self.SPECIAL
-
-    def is_start_of_identifier(self) -> bool:
-        return self.line[self.index].isalpha() or self.line[self.index] == "_"
-
-    def is_identifier(self) -> bool:
-        return self.is_start_of_identifier() or self.line[self.index].isnumeric()
-
-    def last_position(self) -> Position:
-        return Position(self.line, self.line_number, self.prev_index)
-
-    def read(self) -> str:
-        self.skip_spaces()
-        self.prev_index = self.index
-        try:
-            self.advance()
-        except IndexError:
-            pass
-        return self.line[self.prev_index : self.index]
-
-    def skip_spaces(self):
-        while self.index < len(self.line) and self.line[self.index].isspace():
-            self.index += 1
-
-    def advance(self):
-        if self.is_num():
-            while self.is_num():
-                self.index += 1
-        elif self.is_special():
-            self.index += 1
-        elif self.is_start_of_identifier():
-            while self.is_identifier():
-                self.index += 1
-        else:
-            raise UnknownCharacher(Position(self.line, self.line_number, self.index))
+        unknown = position.line.content[position.start]
+        super().__init__(position, f'Unkown character "{unknown}"')
 
 
 class Tokenizer:
-    def tokenize(self, content: str):
+    def tokenize(self, content: str) -> List[Token]:
         tokens = []
         lines = content.split("\n")
         for line_number, line in enumerate(lines, start=1):
-            line_scanner = LineScanner(line, line_number)
-            while lexeme := line_scanner.read():
-                for cls in [Operator, Seperator, Keyword, Literal, Identifier]:
-                    try:
-                        tokens.append(cls(lexeme, line_scanner.last_position()))
-                        break
-                    except ValueError:
-                        pass
+            tokens.extend(self.tokenize_line(Line(line, line_number)))
         return TokenStream(tokens)
+
+    @staticmethod
+    def tokenize_line(line: Line) -> List[Token]:
+        tokens = []
+        offset = 0
+        while offset < len(line.content):
+            token = Tokenizer.token_at(line, offset)
+            offset = token.pos.end
+            if type(token) is Whitespace:
+                continue
+            tokens.append(token)
+        return tokens
+
+    @staticmethod
+    def token_at(line: Line, offset: int) -> Token:
+        for cls in [Whitespace, Operator, Seperator, Keyword, Literal, Identifier]:
+            match = cls.PATTERN.match(line.content, offset)
+            if match is None:
+                continue
+            position = Position(line, *match.span())
+            return cls(match.group(), pos=position)
+        raise UnknownCharacher(Position(line, offset, offset + 1))

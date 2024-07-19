@@ -52,16 +52,12 @@ def test_missing_closing_parenthesis():
 
 def test_simple_assignment():
     tokens = Tokenizer().tokenize("var = 3;")
-    assert Parser().parse(tokens)[0] == Assignment(
-        Identifier("var"), Literal("3")
-    )
+    assert Parser().parse(tokens)[0] == Assignment(Identifier("var"), Literal("3"))
 
 
 def test_variable_copy():
     tokens = Tokenizer().tokenize("foo = bar;")
-    assert Parser().parse(tokens)[0] == Assignment(
-        Identifier("foo"), Identifier("bar")
-    )
+    assert Parser().parse(tokens)[0] == Assignment(Identifier("foo"), Identifier("bar"))
 
 
 def test_assigment_of_operation():
@@ -135,6 +131,7 @@ def test_unary_operator_on_seperator():
     assert Parser().parse_operand(tokens) == UnaryOperation(
         Operator("-"), UnaryOperation(Operator("-"), Literal("1"))
     )
+
 
 def test_invalid_unary_operator():
     tokens = Tokenizer().tokenize("/1")

@@ -1,6 +1,6 @@
 from functools import singledispatchmethod
 
-from tokens import Identifier, Literal, Operator, Seperator, Keyword
+from tokens import Identifier, Literal, Operator, Seperator, Keyword, Whitespace
 from token_stream import TokenStream
 from errors import CompilationError
 from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
@@ -8,16 +8,12 @@ from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleratio
 
 class UnexpectedTokenError(CompilationError):
     def __init__(self, token):
-        super().__init__(
-            token.pos, len(token.raw), f'Expected expression before "{token.raw}"'
-        )
+        super().__init__(token.pos, f'Expected expression before "{token.value()}"')
 
 
 class ExpectedTokenError(CompilationError):
     def __init__(self, token, expected):
-        super().__init__(
-            token.pos, len(token.raw), f'Expected {expected} before "{token.raw}"'
-        )
+        super().__init__(token.pos, f'Expected {expected} before "{token.value()}"')
 
 
 class Parser:
@@ -25,12 +21,26 @@ class Parser:
         parsed = []
         while not tokens.is_at_end():
             token = tokens.pop()
-            parsed.append(self.parse_token(token, tokens))
+            ast_element = self.parse_token(token, tokens)
+            if ast_element is not None:
+                parsed.append(ast_element)
         return parsed
+
+    @staticmethod
+    def filter_tokens(tokens: TokenStream) -> TokenStream:
+        filtered = []
+        for token in tokens.tokens:
+            if type(token) is Whitespace:
+                filtered.append(token)
+        return TokenStream(filtered)
 
     @singledispatchmethod
     def parse_token(self, token, tokens: TokenStream):
         raise UnexpectedTokenError(token)
+
+    @parse_token.register
+    def parse_whitespace(self, _: Whitespace, toekns: TokenStream):
+        pass
 
     @parse_token.register
     def parse_assignment(self, dest: Identifier, tokens: TokenStream):
@@ -101,7 +111,9 @@ class Parser:
         try:
             return parsers[keyword.keyword](tokens)
         except KeyError:
-            raise CompilationError(keyword.pos, len(keyword.keyword), "Unsupported keyword")
+            raise CompilationError(
+                keyword.pos, len(keyword.keyword), "Unsupported keyword"
+            )
 
     def parse_return(self, tokens):
         expr = self.parse_expression(tokens)

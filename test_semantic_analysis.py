@@ -37,4 +37,4 @@ def test_redecleration():
     with pytest.raises(RedelerationError) as excinfo:
         SemanticAnalyzer().analyze(ast_from_code("let a = 0;\nlet a = 0;"))
     assert excinfo.value.new_decleration.name == "a"
-    assert excinfo.value.first_decleration.pos.line_number == 1
+    assert excinfo.value.first_decleration.pos.line.number == 1

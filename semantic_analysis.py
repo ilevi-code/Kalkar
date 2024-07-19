@@ -12,9 +12,7 @@ class SemanticError(CompilationError):
 
 class RedelerationError(SemanticError):
     def __init__(self, first_decleration: Identifier, new_decleration: Identifier):
-        super().__init__(
-            new_decleration.pos, len(new_decleration.name), "Redecleration here"
-        )
+        super().__init__(new_decleration.pos, "Redecleration here")
         self.with_secondary_message_at_token(
             first_decleration, "Previously declared here"
         )
@@ -24,7 +22,7 @@ class RedelerationError(SemanticError):
 
 class UndeclaredError(SemanticError):
     def __init__(self, identifier):
-        super().__init__(identifier.pos, len(identifier.name), "Undeclared variable")
+        super().__init__(identifier.pos, "Undeclared variable")
         self.identifier = identifier
 
 
