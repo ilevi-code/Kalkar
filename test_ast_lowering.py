@@ -44,6 +44,7 @@ def test_lowering_decleration():
         LoadVariable("a", "%0"),
     ]
 
+
 def test_lowering_decleration_with_unary_op():
     assert LoweringPass().lower(ast_from_code("let a = -1;")) == [
         LoadConstant("%0", 1),

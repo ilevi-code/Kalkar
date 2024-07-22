@@ -9,6 +9,7 @@ class Token:
     value: str
     pos: Optional[Position] = field(default=None, compare=False, repr=False)
 
+
 @dataclass
 class Keyword(Token):
     PATTERN: ClassVar[re.Pattern] = re.compile(r"(let|return)")

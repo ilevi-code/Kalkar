@@ -13,7 +13,9 @@ class UnexpectedTokenError(CompilationError):
 
 class ExpectedTokenError(CompilationError):
     def __init__(self, unexpected: TokenKind, expected: str):
-        super().__init__(unexpected.pos, f'Expected {expected} before "{unexpected.value}"')
+        super().__init__(
+            unexpected.pos, f'Expected {expected} before "{unexpected.value}"'
+        )
         self.expected = expected
         self.unexpected = unexpected
 
@@ -42,7 +44,9 @@ class Parser:
     def parse_expression(self, tokens: TokenStream):
         return self.parse_expression_until_seperator(tokens, Seperator(";"))
 
-    def parse_expression_until_seperator(self, tokens: TokenStream, seperator: Seperator):
+    def parse_expression_until_seperator(
+        self, tokens: TokenStream, seperator: Seperator
+    ):
         root = self.parse_operand(tokens)
 
         while True:
@@ -97,9 +101,7 @@ class Parser:
         try:
             return parsers[keyword.value](tokens)
         except KeyError:
-            raise CompilationError(
-                keyword.pos, "Unsupported keyword"
-            )
+            raise CompilationError(keyword.pos, "Unsupported keyword")
 
     def parse_return(self, tokens: TokenStream):
         expr = self.parse_expression(tokens)
