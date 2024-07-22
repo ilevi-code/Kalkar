@@ -16,7 +16,7 @@ class LoweringPass:
         return self.ir
 
     @singledispatchmethod
-    def lower_once(self, node: int):
+    def lower_once(self, node):
         raise TypeError(f"No lowering implemented for {type(node)}")
 
     @lower_once.register
@@ -55,9 +55,7 @@ class LoweringPass:
 
     @lower_once.register
     def _(self, identifier: Identifier):
-        var_name = self.new_temp_var()
-        self.ir.append(LoadVariable(var_name, identifier.value))
-        return var_name
+        return identifier.value
 
     def new_temp_var(self) -> str:
         old_count = self.temporaries_count
