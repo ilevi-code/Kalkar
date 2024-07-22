@@ -1,6 +1,6 @@
 from functools import singledispatchmethod
 
-from tokens import Identifier, Literal, Operator, Seperator, Keyword, Whitespace
+from tokens import Identifier, Literal, Operator, Seperator, Keyword
 from token_stream import TokenStream
 from errors import CompilationError
 from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
@@ -22,30 +22,17 @@ class Parser:
         while not tokens.is_at_end():
             token = tokens.pop()
             ast_element = self.parse_token(token, tokens)
-            if ast_element is not None:
-                parsed.append(ast_element)
+            parsed.append(ast_element)
         return parsed
-
-    @staticmethod
-    def filter_tokens(tokens: TokenStream) -> TokenStream:
-        filtered = []
-        for token in tokens.tokens:
-            if type(token) is Whitespace:
-                filtered.append(token)
-        return TokenStream(filtered)
 
     @singledispatchmethod
     def parse_token(self, token, tokens: TokenStream):
         raise UnexpectedTokenError(token)
 
     @parse_token.register
-    def parse_whitespace(self, _: Whitespace, toekns: TokenStream):
-        pass
-
-    @parse_token.register
     def parse_assignment(self, dest: Identifier, tokens: TokenStream):
         maybe_operator = tokens.pop()
-        if type(maybe_operator) is not Operator or maybe_operator.operator != "=":
+        if maybe_operator != Operator("="):
             raise ExpectedTokenError(maybe_operator, "=")
         src = self.parse_expression(tokens)
         return Assignment(dest, src)
@@ -119,12 +106,13 @@ class Parser:
         expr = self.parse_expression(tokens)
         return Return(expr)
 
+    # Add annotations
     def parse_decleration(self, tokens):
         maybe_identifier = tokens.pop()
         if type(maybe_identifier) is not Identifier:
             raise ExpectedTokenError(maybe_identifier, "identifier")
         maybe_equal_sign = tokens.pop()
-        if type(maybe_equal_sign) is not Operator or maybe_equal_sign.operator != "=":
+        if maybe_equal_sign != Operator("="):
             raise ExpectedTokenError(maybe_equal_sign, "=")
         expression = self.parse_expression(tokens)
         return Decleration(maybe_identifier, expression)
