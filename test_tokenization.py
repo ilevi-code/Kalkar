@@ -12,21 +12,6 @@ from tokens import (
 from lexing import Tokenizer, UnknownCharacher
 
 
-# @pytest.mark.parametrize(
-#     "line,expected",
-#     [
-#         ("func()", ["func", "(", ")"]),
-#         ("a = (b + 15)", ["a", "=", "(", "b", "+", "15", ")"]),
-#     ],
-# )
-# def test_splitting(line, expected):
-#     words = []
-#     line_scanner = LineScanner(line, 0)
-#     while word := line_scanner.read():
-#         words.append(word)
-#     assert words == expected
-
-
 def tokenize_once(line: str) -> TokenKind:
     tokens = Tokenizer.tokenize_line(Line(line, 0))
     assert len(tokens) == 1
@@ -55,6 +40,16 @@ def test_tokenization_literal():
 
 def test_whitespace_are_ignored():
     assert Tokenizer.tokenize_line(Line("   ", 0)) == []
+
+
+def test_tokenize_assignment():
+    assert Tokenizer.tokenize_line(Line("(b + 15)", 0)) == [
+        Seperator("("),
+        Identifier("b"),
+        Operator("+"),
+        Literal("15"),
+        Seperator(")"),
+    ]
 
 
 def test_first_position():
