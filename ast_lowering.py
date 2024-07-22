@@ -21,6 +21,8 @@ class LoweringPass:
 
     @lower_once.register
     def _(self, statement: ast.Decleration):
+        if statement.expr is None:
+            return
         var = self.lower_once(statement.expr)
         self.ir.append(LoadVariable(statement.identifier.value, var))
 

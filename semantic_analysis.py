@@ -27,8 +27,9 @@ class UndeclaredError(SemanticError):
 
 
 class Variable:
-    def __init__(self, identifier):
+    def __init__(self, identifier, initialized: bool):
         self.identifier = identifier
+        self.initialized = initialized
 
 
 class SemanticAnalyzer:
@@ -45,10 +46,11 @@ class SemanticAnalyzer:
 
     @analyze_once.register
     def analyze_decleration(self, decleration: Decleration):
-        self.analyze_once(decleration.expr)
+        if decleration.expr is not None:
+            self.analyze_once(decleration.expr)
         self.assert_undeclared(decleration.identifier)
         self.symbol_table[decleration.identifier.value] = Variable(
-            decleration.identifier
+            decleration.identifier, decleration.expr is not None
         )
 
     @analyze_once.register
@@ -59,6 +61,7 @@ class SemanticAnalyzer:
     def analyze_assignment(self, assignment: Assignment):
         self.analyze_once(assignment.src)
         self.assert_declared(assignment.dst)
+        self.symbol_table[assignment.dst.value].initialized = True
 
     @analyze_once.register
     def analyze_binary_operation(self, operation: BinaryOperation):
@@ -72,6 +75,7 @@ class SemanticAnalyzer:
     @analyze_once.register
     def analyze_identifier(self, identifier: Identifier):
         self.assert_declared(identifier)
+        self.assert_initialized(identifier)
 
     @analyze_once.register
     def analyze_literal(self, _: Literal):
@@ -87,3 +91,7 @@ class SemanticAnalyzer:
             raise RedelerationError(previous_decleration.identifier, identifier)
         except KeyError:
             pass
+
+    def assert_initialized(self, identifier):
+        if not self.symbol_table[identifier.value].initialized:
+            raise SemanticError(identifier.pos, "Is uninitialized")

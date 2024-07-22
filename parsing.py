@@ -112,6 +112,8 @@ class Parser:
         if type(maybe_identifier) is not Identifier:
             raise ExpectedTokenError(maybe_identifier, "identifier")
         maybe_equal_sign = tokens.pop()
+        if maybe_equal_sign == Seperator(';'):
+            return Decleration(maybe_identifier, None)
         if maybe_equal_sign != Operator("="):
             raise ExpectedTokenError(maybe_equal_sign, "=")
         expression = self.parse_expression(tokens)
