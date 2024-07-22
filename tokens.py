@@ -9,15 +9,16 @@ class Token:
     _: KW_ONLY
     pos: Optional[Position] = field(default=None, compare=False, repr=False)
 
-    def value(self) -> str:
-        return self.pos.line.content[self.pos.start : self.pos.end]
-
-
 @dataclass
 class Keyword(Token):
     PATTERN: ClassVar[re.Pattern] = re.compile(r"(let|return)")
 
     keyword: str
+
+    def value(self) -> str:
+        return self.keyword
+
+
 
 
 @dataclass
@@ -26,12 +27,18 @@ class Identifier(Token):
 
     name: str
 
+    def value(self) -> str:
+        return self.name
+
 
 @dataclass
 class Whitespace(Token):
     PATTERN: ClassVar[re.Pattern] = re.compile(r"(\s+)")
 
     spaces: str
+
+    def value(self) -> str:
+        return self.spaces
 
 
 @dataclass
@@ -40,6 +47,9 @@ class Seperator(Token):
 
     seperator: str
 
+    def value(self) -> str:
+        return self.seperator
+
 
 @dataclass
 class Literal(Token):
@@ -47,12 +57,18 @@ class Literal(Token):
 
     literal: str
 
+    def value(self) -> str:
+        return self.literal
+
 
 @dataclass
 class Operator(Token):
     PATTERN: ClassVar[re.Pattern] = re.compile(r"([\+\*-/=])")
 
     operator: str
+
+    def value(self) -> str:
+        return self.operator
 
 
 TokenKind = Union[Whitespace, Operator, Seperator, Keyword, Literal, Identifier]

@@ -2,7 +2,7 @@ import pytest
 
 from parsing import Parser, UnexpectedTokenError, ExpectedTokenError
 from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
-from lexing import Tokenizer, Identifier, Literal, Operator
+from lexing import Tokenizer, Identifier, Literal, Operator, Seperator
 
 
 def test_expression_single_operand():
@@ -46,8 +46,10 @@ def test_parenthesized_literal():
 
 def test_missing_closing_parenthesis():
     tokens = Tokenizer().tokenize("(5;")
-    with pytest.raises(ExpectedTokenError, match='Expected \\) before ";"'):
+    with pytest.raises(ExpectedTokenError) as excinfo:
         Parser().parse_expression(tokens)
+    assert excinfo.value.expected == Seperator(")")
+    assert excinfo.value.unexpected == Seperator(";")
 
 
 def test_simple_assignment():

@@ -1,6 +1,6 @@
 from functools import singledispatchmethod
 
-from tokens import Identifier, Literal, Operator, Seperator, Keyword
+from tokens import TokenKind, Identifier, Literal, Operator, Seperator, Keyword
 from token_stream import TokenStream
 from errors import CompilationError
 from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
@@ -12,8 +12,10 @@ class UnexpectedTokenError(CompilationError):
 
 
 class ExpectedTokenError(CompilationError):
-    def __init__(self, token, expected):
-        super().__init__(token.pos, f'Expected {expected} before "{token.value()}"')
+    def __init__(self, unexpected: TokenKind, expected: TokenKind):
+        super().__init__(unexpected.pos, f'Expected {expected.value()} before "{unexpected.value()}"')
+        self.expected = expected
+        self.unexpected = unexpected
 
 
 class Parser:
@@ -37,16 +39,16 @@ class Parser:
         src = self.parse_expression(tokens)
         return Assignment(dest, src)
 
-    def parse_expression(self, tokens):
-        return self.parse_expression_until_seperator(tokens, ";")
+    def parse_expression(self, tokens: TokenStream):
+        return self.parse_expression_until_seperator(tokens, Seperator(";"))
 
-    def parse_expression_until_seperator(self, tokens, seperator):
+    def parse_expression_until_seperator(self, tokens: TokenStream, seperator: Seperator):
         root = self.parse_operand(tokens)
 
         while True:
             token = tokens.pop()
             if type(token) is Seperator:
-                if token.seperator == seperator:
+                if token == seperator:
                     break
                 else:
                     raise ExpectedTokenError(token, seperator)
@@ -59,7 +61,7 @@ class Parser:
                 raise ExpectedTokenError(token, seperator)
         return root
 
-    def parse_operand(self, tokens):
+    def parse_operand(self, tokens: TokenStream):
         token = tokens.pop()
         return self._parse_operand(token, tokens)
 
@@ -84,7 +86,7 @@ class Parser:
     def _(self, seperator: Seperator, tokens: TokenStream):
         if seperator.seperator != "(":
             raise UnexpectedTokenError(seperator)
-        expression = self.parse_expression_until_seperator(tokens, ")")
+        expression = self.parse_expression_until_seperator(tokens, Seperator(")"))
         if type(expression) is BinaryOperation:
             return expression.parenthesize()
         return expression
@@ -102,12 +104,11 @@ class Parser:
                 keyword.pos, len(keyword.keyword), "Unsupported keyword"
             )
 
-    def parse_return(self, tokens):
+    def parse_return(self, tokens: TokenStream):
         expr = self.parse_expression(tokens)
         return Return(expr)
 
-    # Add annotations
-    def parse_decleration(self, tokens):
+    def parse_decleration(self, tokens: TokenStream):
         maybe_identifier = tokens.pop()
         if type(maybe_identifier) is not Identifier:
             raise ExpectedTokenError(maybe_identifier, "identifier")
@@ -118,7 +119,7 @@ class Parser:
         return Decleration(maybe_identifier, expression)
 
     @staticmethod
-    def encforce_order_of_operation(root):
+    def encforce_order_of_operation(root: BinaryOperation):
         if type(root.lhs) is BinaryOperation and root.is_lower_order(root.lhs):
             new_root = root.lhs
             root.lhs = new_root.rhs
