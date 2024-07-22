@@ -47,7 +47,7 @@ class SemanticAnalyzer:
     def analyze_decleration(self, decleration: Decleration):
         self.analyze_once(decleration.expr)
         self.assert_undeclrated(decleration.identifier)
-        self.symbol_table[decleration.identifier.name] = Variable(
+        self.symbol_table[decleration.identifier.value] = Variable(
             decleration.identifier
         )
 
@@ -78,12 +78,12 @@ class SemanticAnalyzer:
         pass
 
     def assert_declrated(self, identifier):
-        if identifier.name not in self.symbol_table:
+        if identifier.value not in self.symbol_table:
             raise UndeclaredError(identifier)
 
     def assert_undeclrated(self, identifier):
         try:
-            previous_decleration = self.symbol_table[identifier.name]
+            previous_decleration = self.symbol_table[identifier.value]
             raise RedelerationError(previous_decleration.identifier, identifier)
         except KeyError:
             pass

@@ -8,12 +8,12 @@ from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleratio
 
 class UnexpectedTokenError(CompilationError):
     def __init__(self, token):
-        super().__init__(token.pos, f'Expected expression before "{token.value()}"')
+        super().__init__(token.pos, f'Expected expression before "{token.value}"')
 
 
 class ExpectedTokenError(CompilationError):
-    def __init__(self, unexpected: TokenKind, expected: TokenKind):
-        super().__init__(unexpected.pos, f'Expected {expected.value()} before "{unexpected.value()}"')
+    def __init__(self, unexpected: TokenKind, expected: str):
+        super().__init__(unexpected.pos, f'Expected {expected} before "{unexpected.value}"')
         self.expected = expected
         self.unexpected = unexpected
 
@@ -47,18 +47,15 @@ class Parser:
 
         while True:
             token = tokens.pop()
-            if type(token) is Seperator:
-                if token == seperator:
-                    break
-                else:
-                    raise ExpectedTokenError(token, seperator)
+            if token == seperator:
+                break
             elif type(token) is Operator:
                 operator = token
                 rhs = self.parse_operand(tokens)
                 root = BinaryOperation(root, operator, rhs)
                 root = Parser.encforce_order_of_operation(root)
             else:
-                raise ExpectedTokenError(token, seperator)
+                raise ExpectedTokenError(token, seperator.value)
         return root
 
     def parse_operand(self, tokens: TokenStream):
@@ -71,7 +68,7 @@ class Parser:
 
     @_parse_operand.register
     def _(self, operator: Operator, tokens: TokenStream):
-        if operator.operator == "-":
+        if operator.value == "-":
             operand = self.parse_operand(tokens)
             return UnaryOperation(operator, operand)
         else:
@@ -84,7 +81,7 @@ class Parser:
 
     @_parse_operand.register
     def _(self, seperator: Seperator, tokens: TokenStream):
-        if seperator.seperator != "(":
+        if seperator.value != "(":
             raise UnexpectedTokenError(seperator)
         expression = self.parse_expression_until_seperator(tokens, Seperator(")"))
         if type(expression) is BinaryOperation:
@@ -98,10 +95,10 @@ class Parser:
             "let": self.parse_decleration,
         }
         try:
-            return parsers[keyword.keyword](tokens)
+            return parsers[keyword.value](tokens)
         except KeyError:
             raise CompilationError(
-                keyword.pos, len(keyword.keyword), "Unsupported keyword"
+                keyword.pos, "Unsupported keyword"
             )
 
     def parse_return(self, tokens: TokenStream):

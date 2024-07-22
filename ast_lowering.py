@@ -22,12 +22,12 @@ class LoweringPass:
     @lower_once.register
     def _(self, statement: ast.Decleration):
         var = self.lower_once(statement.expr)
-        self.ir.append(LoadVariable(statement.identifier.name, var))
+        self.ir.append(LoadVariable(statement.identifier.value, var))
 
     @lower_once.register
     def _(self, statement: ast.Assignment):
         var = self.lower_once(statement.src)
-        self.ir.append(LoadVariable(statement.dst.name, var))
+        self.ir.append(LoadVariable(statement.dst.value, var))
 
     @lower_once.register
     def _(self, statement: ast.Return):
@@ -36,7 +36,7 @@ class LoweringPass:
     @lower_once.register
     def _(self, unary_op: ast.UnaryOperation):
         var = self.lower_once(unary_op.operand)
-        self.ir.append(UnaryOperation(unary_op.operator.operator, var))
+        self.ir.append(UnaryOperation(unary_op.operator.value, var))
         return var
 
     @lower_once.register
@@ -44,19 +44,19 @@ class LoweringPass:
         rhs = self.lower_once(binary_op.rhs)
         lhs = self.lower_once(binary_op.lhs)
         dest = self.new_temp_var()
-        self.ir.append(BinaryOperation(dest, binary_op.operator.operator, lhs, rhs))
+        self.ir.append(BinaryOperation(dest, binary_op.operator.value, lhs, rhs))
         return dest
 
     @lower_once.register
     def _(self, literal: Literal):
         var_name = self.new_temp_var()
-        self.ir.append(LoadConstant(var_name, int(literal.literal)))
+        self.ir.append(LoadConstant(var_name, int(literal.value)))
         return var_name
 
     @lower_once.register
     def _(self, identifier: Identifier):
         var_name = self.new_temp_var()
-        self.ir.append(LoadVariable(var_name, identifier.name))
+        self.ir.append(LoadVariable(var_name, identifier.value))
         return var_name
 
     def new_temp_var(self) -> str:

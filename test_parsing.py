@@ -48,7 +48,7 @@ def test_missing_closing_parenthesis():
     tokens = Tokenizer().tokenize("(5;")
     with pytest.raises(ExpectedTokenError) as excinfo:
         Parser().parse_expression(tokens)
-    assert excinfo.value.expected == Seperator(")")
+    assert excinfo.value.expected == ")"
     assert excinfo.value.unexpected == Seperator(";")
 
 

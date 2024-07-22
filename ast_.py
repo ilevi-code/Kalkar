@@ -21,7 +21,7 @@ class BinaryOperation:
     }
 
     def __post_init__(self):
-        self.order = BinaryOperation.ORDER_OF_OPERATIONS[self.operator.operator]
+        self.order = BinaryOperation.ORDER_OF_OPERATIONS[self.operator.value]
 
     def is_lower_order(self, other):
         return other.order < self.order and not other.is_parenthseized
