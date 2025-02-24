@@ -2,7 +2,12 @@ import pytest
 
 from lexing import Tokenizer
 from parsing import Parser
-from semantic_analysis import SemanticAnalyzer, UndeclaredError, RedelerationError
+from semantic_analysis import (
+    SemanticAnalyzer,
+    UndeclaredError,
+    RedelerationError,
+    ConstAssignmentError,
+)
 
 
 def ast_from_code(code: str):
@@ -37,4 +42,11 @@ def test_redecleration():
     with pytest.raises(RedelerationError) as excinfo:
         SemanticAnalyzer().analyze(ast_from_code("let a = 0;\nlet a = 0;"))
     assert excinfo.value.new_decleration.value == "a"
+    assert excinfo.value.first_decleration.pos.line.number == 1
+
+
+def test_const_assignment():
+    with pytest.raises(ConstAssignmentError) as excinfo:
+        SemanticAnalyzer().analyze(ast_from_code("const b = 0;\nb = 0;"))
+    assert excinfo.value.usage.value == "b"
     assert excinfo.value.first_decleration.pos.line.number == 1

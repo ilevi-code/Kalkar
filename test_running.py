@@ -136,3 +136,7 @@ def test_adding_return_variable():
 
 def test_adding_two_variables():
     assert compile_and_run("let a = 1; let b = 2; let c = a + b; return c;") == 3
+
+
+def test_const_usage():
+    assert compile_and_run("const a = 1; return a + 2;") == 3

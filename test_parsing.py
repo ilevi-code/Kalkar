@@ -195,3 +195,10 @@ def test_decleration_without_expression():
 def test_variable_decleration():
     tokens = Tokenizer().tokenize("let a = 1;")
     assert Parser().parse(tokens) == [Decleration(Identifier("a"), Literal("1"))]
+
+
+def test_const_decleration():
+    tokens = Tokenizer().tokenize("const a = 1;")
+    assert Parser().parse(tokens) == [
+        Decleration(Identifier("a"), Literal("1"), is_const=True)
+    ]
