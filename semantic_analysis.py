@@ -46,7 +46,7 @@ class SemanticAnalyzer:
     @analyze_once.register
     def analyze_decleration(self, decleration: Decleration):
         self.analyze_once(decleration.expr)
-        self.assure_undeclrated(decleration.identifier)
+        self.assert_undeclrated(decleration.identifier)
         self.symbol_table[decleration.identifier.value] = Variable(
             decleration.identifier
         )
@@ -58,7 +58,7 @@ class SemanticAnalyzer:
     @analyze_once.register
     def analyze_assignment(self, assignment: Assignment):
         self.analyze_once(assignment.src)
-        self.assure_declrated(assignment.dst)
+        self.assert_declrated(assignment.dst)
 
     @analyze_once.register
     def analyze_binary_operation(self, operation: BinaryOperation):
@@ -71,17 +71,17 @@ class SemanticAnalyzer:
 
     @analyze_once.register
     def analyze_identifier(self, identifier: Identifier):
-        self.assure_declrated(identifier)
+        self.assert_declrated(identifier)
 
     @analyze_once.register
     def analyze_literal(self, _: Literal):
         pass
 
-    def assure_declrated(self, identifier):
+    def assert_declrated(self, identifier):
         if identifier.value not in self.symbol_table:
             raise UndeclaredError(identifier)
 
-    def assure_undeclrated(self, identifier):
+    def assert_undeclrated(self, identifier):
         try:
             previous_decleration = self.symbol_table[identifier.value]
             raise RedelerationError(previous_decleration.identifier, identifier)
