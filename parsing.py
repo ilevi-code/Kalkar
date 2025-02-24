@@ -97,6 +97,7 @@ class Parser:
         parsers = {
             "return": self.parse_return,
             "let": self.parse_decleration,
+            "const": self.parse_const,
         }
         try:
             return parsers[keyword.value](tokens)
@@ -116,6 +117,11 @@ class Parser:
             raise ExpectedTokenError(maybe_equal_sign, "=")
         expression = self.parse_expression(tokens)
         return Decleration(maybe_identifier, expression)
+
+    def parse_const(self, tokens: TokenStream):
+        declration = self.parse_decleration(tokens)
+        declration.const = True
+        return declration
 
     @staticmethod
     def encforce_order_of_operation(root: BinaryOperation):

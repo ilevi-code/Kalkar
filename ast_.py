@@ -41,6 +41,7 @@ class UnaryOperation:
 class Decleration:
     identifier: Identifier
     expr: Expression
+    const: bool = False
 
 
 @dataclass

@@ -12,7 +12,7 @@ class Token:
 
 @dataclass
 class Keyword(Token):
-    PATTERN: ClassVar[re.Pattern] = re.compile(r"(let|return)")
+    PATTERN: ClassVar[re.Pattern] = re.compile(r"(let|return|const)")
 
 
 @dataclass
