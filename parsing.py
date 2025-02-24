@@ -1,6 +1,6 @@
 from functools import singledispatchmethod
 
-from tokens import TokenKind, Identifier, Literal, Operator, Seperator, Keyword
+from tokens import TokenKind, Identifier, Literal, Operator, Seperator, Keyword, Comment
 from token_stream import TokenStream
 from errors import CompilationError
 from ast_ import BinaryOperation, UnaryOperation, Assignment, Return, Decleration
@@ -26,7 +26,8 @@ class Parser:
         while not tokens.is_at_end():
             token = tokens.pop()
             ast_element = self.parse_token(token, tokens)
-            parsed.append(ast_element)
+            if ast_element is not None:
+                parsed.append(ast_element)
         return parsed
 
     @singledispatchmethod
@@ -130,3 +131,7 @@ class Parser:
             new_root.lhs = root
             return new_root
         return root
+
+    @parse_token.register
+    def parse_comment(self, comment: Comment, tokens: TokenStream):
+        pass

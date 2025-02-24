@@ -33,6 +33,12 @@ def test_undeclared_in_return():
     assert excinfo.value.identifier.value == "bar"
 
 
+def test_comment_no_declaring():
+    with pytest.raises(UndeclaredError) as excinfo:
+        SemanticAnalyzer().analyze(ast_from_code("// let a = 1;\nreturn a;"))
+    assert excinfo.value.identifier.value == "a"
+
+
 def test_redecleration():
     with pytest.raises(RedelerationError) as excinfo:
         SemanticAnalyzer().analyze(ast_from_code("let a = 0;\nlet a = 0;"))
