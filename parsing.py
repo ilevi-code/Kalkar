@@ -120,7 +120,7 @@ class Parser:
 
     def parse_const(self, tokens: TokenStream):
         declration = self.parse_decleration(tokens)
-        declration.const = True
+        declration.is_const = True
         return declration
 
     @staticmethod

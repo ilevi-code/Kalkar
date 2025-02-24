@@ -26,9 +26,18 @@ class UndeclaredError(SemanticError):
         self.identifier = identifier
 
 
+class ConstAssignmentError(SemanticError):
+    def __init__(self, first_decleration: Identifier, usage: Identifier):
+        super().__init__(usage.pos, "Cannot assign to const")
+        self.with_secondary_message_at_token(first_decleration, "Declared 'const' here")
+        self.first_decleration = first_decleration
+        self.usage = usage
+
+
 class Variable:
-    def __init__(self, identifier):
+    def __init__(self, identifier, is_const=False):
         self.identifier = identifier
+        self.is_const = is_const
 
 
 class SemanticAnalyzer:
@@ -48,7 +57,8 @@ class SemanticAnalyzer:
         self.analyze_once(decleration.expr)
         self.assert_undeclared(decleration.identifier)
         self.symbol_table[decleration.identifier.value] = Variable(
-            decleration.identifier
+            decleration.identifier,
+            decleration.is_const,
         )
 
     @analyze_once.register
@@ -59,6 +69,7 @@ class SemanticAnalyzer:
     def analyze_assignment(self, assignment: Assignment):
         self.analyze_once(assignment.src)
         self.assert_declared(assignment.dst)
+        self.assert_mutable(assignment.dst)
 
     @analyze_once.register
     def analyze_binary_operation(self, operation: BinaryOperation):
@@ -87,3 +98,8 @@ class SemanticAnalyzer:
             raise RedelerationError(previous_decleration.identifier, identifier)
         except KeyError:
             pass
+
+    def assert_mutable(self, identifier: Identifier):
+        previous_decleration = self.symbol_table[identifier.value]
+        if previous_decleration.is_const:
+            raise ConstAssignmentError(previous_decleration.identifier, identifier)
