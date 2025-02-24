@@ -2,7 +2,7 @@ from typing import List
 
 from position import Position, Line
 from errors import CompilationError
-from tokens import Token, Identifier, Keyword, Seperator, Literal, Operator, Whitespace
+from tokens import Token, Identifier, Keyword, Seperator, Literal, Operator, Whitespace, Comment
 from token_stream import TokenStream
 
 
@@ -34,7 +34,7 @@ class Tokenizer:
 
     @staticmethod
     def token_at(line: Line, offset: int) -> Token:
-        for cls in [Whitespace, Operator, Seperator, Keyword, Literal, Identifier]:
+        for cls in [Whitespace, Comment, Operator, Seperator, Keyword, Literal, Identifier]:
             match = cls.PATTERN.match(line.content, offset)
             if match is None:
                 continue

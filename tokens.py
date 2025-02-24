@@ -40,4 +40,10 @@ class Operator(Token):
     PATTERN: ClassVar[re.Pattern] = re.compile(r"([\+\*-/=])")
 
 
+@dataclass
+class Comment(Token):
+    PATTERN: ClassVar[re.Pattern] = re.compile("//.*")
+
+
+
 TokenKind = Union[Whitespace, Operator, Seperator, Keyword, Literal, Identifier]
